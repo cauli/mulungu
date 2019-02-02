@@ -1,4 +1,9 @@
-package models
+package tree
+
+type Tree struct {
+	id   string `json:"id"`
+	root *Node  `json:"root"`
+}
 
 type Node struct {
 	data     MetaData `json:"metadata"`
@@ -11,12 +16,7 @@ type MetaData struct {
 	title string `json:"title"`
 }
 
-type Tree struct {
-	id   string `json:"id"`
-	root *Node  `json:"root"`
-}
-
-func Create(id string) (*Tree, error) {
+func Create(treeId string) (*Tree, error) {
 	rootNode := Node{
 		data: MetaData{
 			name:  "#1",
@@ -25,6 +25,7 @@ func Create(id string) (*Tree, error) {
 	}
 
 	tree := &Tree{
+		id:   treeId,
 		root: &rootNode,
 	}
 

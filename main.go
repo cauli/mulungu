@@ -9,13 +9,15 @@ import (
 func main() {
 	e := echo.New()
 
-	e.PUT("/chartId/:chartId", controllers.CreateChart)
-	e.POST("/chartId/:chartId", controllers.CreateChart)
+	e.GET("/chart/:chartId", controllers.GetChart)
+	e.PUT("/chart/:chartId", controllers.CreateChart)
+	e.POST("/chart/:chartId", controllers.CreateChart)
+	e.DELETE("/chart/:chartId", controllers.DeleteChart)
 
-	e.GET("/chartId/:chartId/employee/:employeeId/subordinates", controllers.GetSubordinates)
+	e.GET("/chart/:chartId/employee/:employeeId/subordinates", controllers.GetSubordinates)
 
-	e.PUT("/chartId/:chartId/employee/:employeeId/boss/:bossId", controllers.UpdateBoss)
-	e.POST("/chartId/:chartId/employee/:employeeId/boss/:bossId", controllers.UpdateBoss)
+	e.PUT("/chart/:chartId/employee/:employeeId/boss/:bossId", controllers.UpdateBoss)
+	e.POST("/chart/:chartId/employee/:employeeId/boss/:bossId", controllers.UpdateBoss)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
