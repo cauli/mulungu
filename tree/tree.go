@@ -132,6 +132,15 @@ func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
 		return fmt.Errorf("It is not possible to attach a Node to itself")
 	}
 
+	foundParentNode, err := tree.FindNode(parent.ID, nil)
+	if err != nil {
+		return fmt.Errorf("An error has occurred when searching for parent node on the tree.\nDetails: %s", err.Error())
+	}
+
+	if foundParentNode == nil {
+		return fmt.Errorf("The parent node does not exist on the tree")
+	}
+
 	newNode.ParentID = parent.ID
 	parent.Children = append(parent.Children, newNode)
 

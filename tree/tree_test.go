@@ -288,7 +288,43 @@ func TestDetachNode(t *testing.T) {
 						response, _ := rootNode.GetDescendants()
 						So(response.subordinates.count.direct, ShouldEqual, 4)
 					})
+				})
+			})
+		})
+	})
 
+	Convey("Given an initial simplistic Tree", t, func() {
+		chart, _ := Create("normal")
+		rootNode, _ := chart.GetRoot()
+
+		Convey("When I get detach the root node", func() {
+			_, detachErr := chart.DetachNode(rootNode)
+
+			Convey("I should have an error, because you should not be able to detach a root node", func() {
+				So(detachErr, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a linear tree", t, func() {
+		chart, _ := Create("complex")
+		rootNode, _ := chart.GetRoot()
+		aNode := Node{ID: "a"}
+		bNode := Node{ID: "b"}
+		cNode := Node{ID: "c"}
+
+		chart.InsertNode(&aNode, rootNode)
+		chart.InsertNode(&bNode, &aNode)
+		chart.InsertNode(&cNode, &bNode)
+
+		Convey("When I detach a higher node (`a`)", func() {
+			detachedA, _ := chart.DetachNode(&aNode)
+
+			Convey("And try to attach it to one of its descendants (`c`)", func() {
+				attachErr := chart.InsertNode(detachedA, &cNode)
+
+				Convey("Then we should have an error avoiding this edge case", func() {
+					So(attachErr, ShouldNotEqual, nil)
 				})
 			})
 		})
