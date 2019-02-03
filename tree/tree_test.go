@@ -33,3 +33,27 @@ func TestCreate(t *testing.T) {
 		})
 	})
 }
+
+func TestFindNode(t *testing.T) {
+	Convey("Given an initial Tree with any name", t, func() {
+		chart, _ := Create("normal")
+		var rootNode *Node
+
+		Convey("Then I should be able to directly find it's Root Node", func() {
+			rootNode, _ = chart.GetRoot()
+
+			Convey("When I ask to find the Root Node using the FindNode method", func() {
+				foundNode, err := chart.FindNode((*rootNode).Id, nil)
+
+				Convey("We should not have any error", func() {
+					So(err, ShouldEqual, nil)
+				})
+
+				Convey("And the found node should equal the root node", func() {
+					So(rootNode, ShouldEqual, foundNode)
+				})
+			})
+		})
+
+	})
+}
