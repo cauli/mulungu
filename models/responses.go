@@ -1,4 +1,4 @@
-package responses
+package models
 
 type Response struct {
 	err errorResponse `json:"error,omitempty"`

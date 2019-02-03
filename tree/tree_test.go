@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"encoding/json"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -12,7 +13,7 @@ func TestCreate(t *testing.T) {
 		initialTree := Tree{
 			Id: name,
 			Root: &Node{
-				Id: "1",
+				ID: "1",
 				Data: MetaData{
 					Name:  "#1",
 					Title: "Founder",
@@ -48,7 +49,7 @@ func TestFindNode(t *testing.T) {
 			})
 
 			Convey("When I ask to find the Root Node using the FindNode method", func() {
-				foundNode, err := chart.FindNode((*rootNode).Id, nil)
+				foundNode, err := chart.FindNode((*rootNode).ID, nil)
 
 				Convey("Then we should not have any error", func() {
 					So(err, ShouldEqual, nil)
@@ -68,7 +69,7 @@ func TestInsertNode(t *testing.T) {
 
 		Convey("When I insert a new node to the root node", func() {
 			rootNode, _ := chart.GetRoot()
-			insertedNode := &Node{Id: "2"}
+			insertedNode := &Node{ID: "2"}
 
 			err := chart.InsertNode(insertedNode, rootNode)
 
@@ -77,7 +78,7 @@ func TestInsertNode(t *testing.T) {
 			})
 
 			Convey("Then the new node must be findable", func() {
-				foundNode, _ := chart.FindNode(insertedNode.Id, nil)
+				foundNode, _ := chart.FindNode(insertedNode.ID, nil)
 				So(*insertedNode, ShouldResemble, *foundNode)
 			})
 		})
@@ -88,10 +89,10 @@ func TestInsertNode(t *testing.T) {
 
 		Convey("When I insert many nodes", func() {
 			rootNode, _ := chart.GetRoot()
-			aNode := Node{Id: "a"}
-			bNode := Node{Id: "b"}
-			cNode := Node{Id: "c"}
-			dNode := Node{Id: "d"}
+			aNode := Node{ID: "a"}
+			bNode := Node{ID: "b"}
+			cNode := Node{ID: "c"}
+			dNode := Node{ID: "d"}
 
 			aErr := chart.InsertNode(&aNode, rootNode)
 			bErr := chart.InsertNode(&bNode, rootNode)
@@ -115,7 +116,7 @@ func TestInsertNode(t *testing.T) {
 			})
 
 			Convey("Then the deepest node must be findable by ID", func() {
-				foundNode, errFindC := chart.FindNode(cNode.Id, nil)
+				foundNode, errFindC := chart.FindNode(cNode.ID, nil)
 
 				Convey("and should not have an error finding `c`", func() {
 					So(errFindC, ShouldEqual, nil)
@@ -126,7 +127,92 @@ func TestInsertNode(t *testing.T) {
 				})
 
 				Convey("and foundNode.Id should be `c`", func() {
-					So((*foundNode).Id, ShouldEqual, "c")
+					So((*foundNode).ID, ShouldEqual, "c")
+				})
+			})
+		})
+	})
+}
+
+func TestGetDescendants(t *testing.T) {
+	Convey("Given an initial Tree with any valid name", t, func() {
+		chart, _ := Create("normal")
+
+		Convey("When I insert nodes to create a complex tree", func() {
+			rootNode, _ := chart.GetRoot()
+			aNode := Node{ID: "a"}
+			bNode := Node{ID: "b"}
+			cNode := Node{ID: "c"}
+			dNode := Node{ID: "d"}
+			eNode := Node{ID: "e"}
+			fNode := Node{ID: "f"}
+
+			chart.InsertNode(&aNode, rootNode)
+			chart.InsertNode(&bNode, rootNode)
+			chart.InsertNode(&cNode, &aNode)
+			chart.InsertNode(&dNode, rootNode)
+			chart.InsertNode(&eNode, &cNode)
+			chart.InsertNode(&fNode, &cNode)
+
+			Convey("Then when I get the descendants of the root node", func() {
+				response, subErr := rootNode.GetDescendants()
+
+				Convey("I should not have an error", func() {
+					So(subErr, ShouldEqual, nil)
+				})
+
+				Convey("The count of direct subordinates should equal 3", func() {
+					So(response.subordinates.count.direct, ShouldEqual, 3)
+				})
+
+				Convey("The total count of subordinates should equal 6", func() {
+					So(response.subordinates.count.total, ShouldEqual, 6)
+				})
+
+				Convey("The `hierarchy` should resemble expected JSON", func() {
+					expectedHierarchyJSON := []byte(`[{
+							"id": "a",
+							"parentId": "1",
+							"children": [{
+								"id": "c",
+								"parentId": "a",
+								"children": [{
+									"id": "e",
+									"parentId": "c"
+								}, {
+									"id": "f",
+									"parentId": "c"
+								}]
+							}]
+						},
+						{
+							"id": "b",
+							"parentId": "1"
+						},
+						{
+							"id": "d",
+							"parentId": "1"
+						}
+					]`)
+					expectedHierarchy := []*Node{}
+					unmarshallError := json.Unmarshal(expectedHierarchyJSON, &expectedHierarchy)
+
+					Convey("I should not have an unmarshall error", func() {
+						So(unmarshallError, ShouldEqual, nil)
+					})
+
+					resultingHierarchyJSON, _ := json.Marshal(response.subordinates.hierarchy)
+					resultingHierarchy := []*Node{}
+					resultingErr := json.Unmarshal([]byte(resultingHierarchyJSON), &resultingHierarchy)
+
+					Convey("I should not have an unmarshall error for the resulting structure", func() {
+						So(resultingErr, ShouldEqual, nil)
+					})
+
+					Convey("It resembles the expected JSON", func() {
+						So(response.subordinates.hierarchy, ShouldResemble, expectedHierarchy)
+					})
+
 				})
 			})
 		})

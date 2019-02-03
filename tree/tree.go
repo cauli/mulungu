@@ -1,10 +1,7 @@
 package tree
 
 import (
-	"encoding/json"
 	"fmt"
-
-	"github.com/TylerBrock/colorjson"
 )
 
 type Tree struct {
@@ -13,10 +10,10 @@ type Tree struct {
 }
 
 type Node struct {
-	Id       string   `json:"id"`
+	ID       string   `json:"id"`
 	Data     MetaData `json:"metadata,omitempty"`
 	Children []*Node  `json:"children,omitempty"`
-	parent   *Node    `json:"parent,omitempty"`
+	ParentID string   `json:"parentId,omitEmpty"`
 }
 
 type MetaData struct {
@@ -24,9 +21,23 @@ type MetaData struct {
 	Title string `json:"title,omitempty"`
 }
 
+type SubordinatesResponse struct {
+	subordinates SubordinatesInfo `json:"subordinates"`
+}
+
+type SubordinatesInfo struct {
+	count     SubordinatesCount `json:"count"`
+	hierarchy []*Node           `json:"hierarchy"`
+}
+
+type SubordinatesCount struct {
+	direct int `json:"direct,omitempty"`
+	total  int `json:"total,omitempty"`
+}
+
 func Create(treeId string) (*Tree, error) {
 	rootNode := Node{
-		Id: "1", //uuid.New().String(),
+		ID: "1", //uuid.New().String(),
 		Data: MetaData{
 			Name:  "#1",
 			Title: "Founder",
@@ -59,7 +70,7 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 		currentNode = rootNode
 	}
 
-	if currentNode.Id == id {
+	if currentNode.ID == id {
 		return currentNode, nil
 	}
 
@@ -78,54 +89,61 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 	return nil, nil
 }
 
+func (tree Tree) GetDescendants(id string) ([]*Node, error) {
+	node, err := tree.FindNode(id, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if node == nil {
+		return nil, fmt.Errorf("ID `%s` was not found", id)
+	}
+
+	return node.Children, nil
+}
+
+func (node *Node) GetDescendants() (SubordinatesResponse, error) {
+	directCount := len(node.Children)
+
+	totalCount := 0
+	for _, descendant := range node.Children {
+		totalCount += descendant.countAllDescendants() + 1
+	}
+
+	response := SubordinatesResponse{
+		subordinates: SubordinatesInfo{
+			count: SubordinatesCount{
+				direct: directCount,
+				total:  totalCount,
+			},
+			hierarchy: node.Children,
+		},
+	}
+
+	return response, nil
+}
+
 func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
 	if parent == nil || newNode == nil {
 		return fmt.Errorf("Must provide a new node and parent to attach it to")
 	}
 
 	if parent == newNode {
-		return fmt.Errorf("Cannot attach a node to itself")
+		return fmt.Errorf("It is not possible to attach a Node to itself")
 	}
-	newNode.parent = parent
+
+	newNode.ParentID = parent.ID
 	parent.Children = append(parent.Children, newNode)
 
 	return nil
 }
 
-func (tree Tree) ToJSON() (string, error) {
-	json, err := json.Marshal(tree)
-	if err != nil {
-		return "", err
+func (node *Node) countAllDescendants() int {
+	var totalCount int
+
+	for _, descendant := range node.Children {
+		totalCount += descendant.countAllDescendants() + 1
 	}
 
-	return string(json), nil
-}
-
-func (tree Tree) Print() error {
-	str, err := tree.ToJSON()
-	if err != nil {
-		return err
-	}
-
-	var obj map[string]interface{}
-	json.Unmarshal([]byte(str), &obj)
-
-	formatter := colorjson.NewFormatter()
-	formatter.Indent = 2
-
-	s, _ := formatter.Marshal(obj)
-	fmt.Println("\n", string(s))
-
-	return nil
-}
-
-func FromJSON(value string) (*Tree, error) {
-	tree := Tree{}
-
-	err := json.Unmarshal([]byte(value), &tree)
-	if err != nil {
-		return nil, err
-	}
-
-	return &tree, nil
+	return totalCount
 }

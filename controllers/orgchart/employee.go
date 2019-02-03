@@ -35,7 +35,12 @@ func GetSubordinates(c echo.Context) error {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Employee ID `%v` not found for chart `%v`", employeeID, chartID))
 	}
 
-	return c.String(http.StatusOK, fmt.Sprintf("Found employee ID `%v` on Chart ID `%v`\n%v", employeeID, chartID, employee))
+	subordinates, err := (*employee).GetDescendants()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, subordinates)
 }
 
 // UpdateLeader changes the parent node (boss) of a node
