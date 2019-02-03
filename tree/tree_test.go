@@ -3,7 +3,6 @@ package tree
 import (
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -89,13 +88,15 @@ func TestInsertNode(t *testing.T) {
 
 		Convey("When I insert many nodes", func() {
 			rootNode, _ := chart.GetRoot()
-			aNode := &Node{Id: "a"}
-			bNode := &Node{Id: "b"}
-			cNode := &Node{Id: "c"}
+			aNode := Node{Id: "a"}
+			bNode := Node{Id: "b"}
+			cNode := Node{Id: "c"}
+			dNode := Node{Id: "d"}
 
-			aErr := chart.InsertNode(aNode, rootNode)
-			bErr := chart.InsertNode(bNode, rootNode)
-			cErr := chart.InsertNode(cNode, aNode)
+			aErr := chart.InsertNode(&aNode, rootNode)
+			bErr := chart.InsertNode(&bNode, rootNode)
+			cErr := chart.InsertNode(&cNode, &aNode)
+			dErr := chart.InsertNode(&dNode, rootNode)
 
 			Convey("Then we should not have an error inserting `a`", func() {
 				So(aErr, ShouldEqual, nil)
@@ -109,20 +110,22 @@ func TestInsertNode(t *testing.T) {
 				So(cErr, ShouldEqual, nil)
 			})
 
+			Convey("Then we should not have an error inserting `d`", func() {
+				So(dErr, ShouldEqual, nil)
+			})
+
 			Convey("Then the deepest node must be findable by ID", func() {
 				foundNode, errFindC := chart.FindNode(cNode.Id, nil)
 
-				Convey("and then should not have an error finding `c`", func() {
+				Convey("and should not have an error finding `c`", func() {
 					So(errFindC, ShouldEqual, nil)
 				})
 
-				Convey("and then the foundNode should not be nil", func() {
+				Convey("and the foundNode should not be nil", func() {
 					So(foundNode, ShouldNotEqual, nil)
 				})
 
-				spew.Dump(chart.ToJSON())
-
-				Convey("and then the foundNode.Id should be `c`", func() {
+				Convey("and foundNode.Id should be `c`", func() {
 					So((*foundNode).Id, ShouldEqual, "c")
 				})
 			})

@@ -3,6 +3,8 @@ package tree
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/TylerBrock/colorjson"
 )
 
 type Tree struct {
@@ -12,14 +14,14 @@ type Tree struct {
 
 type Node struct {
 	Id       string   `json:"id"`
-	Data     MetaData `json:"metadata"`
-	Children *[]Node  `json:"children"`
-	parent   *Node    `json:"parent"`
+	Data     MetaData `json:"metadata,omitempty"`
+	Children []*Node  `json:"children,omitempty"`
+	parent   *Node    `json:"parent,omitempty"`
 }
 
 type MetaData struct {
-	Name  string `json:"name"`
-	Title string `json:"title"`
+	Name  string `json:"name,omitempty"`
+	Title string `json:"title,omitempty"`
 }
 
 func Create(treeId string) (*Tree, error) {
@@ -61,11 +63,9 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 		return currentNode, nil
 	}
 
-	fmt.Println("Checking node: ", currentNode.Id)
-
 	if currentNode.Children != nil {
-		for _, child := range *currentNode.Children {
-			foundNode, err := tree.FindNode(id, &child)
+		for _, child := range currentNode.Children {
+			foundNode, err := tree.FindNode(id, child)
 			if err != nil {
 				return nil, err
 			}
@@ -79,21 +79,16 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 }
 
 func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
-	if parent == nil {
-		return fmt.Errorf("Must provide a parent node")
+	if parent == nil || newNode == nil {
+		return fmt.Errorf("Must provide a new node and parent to attach it to")
 	}
 
-	if newNode == nil {
-		return fmt.Errorf("Must provide a new node")
+	if parent == newNode {
+		return fmt.Errorf("Cannot attach a node to itself")
 	}
-
 	newNode.parent = parent
+	parent.Children = append(parent.Children, newNode)
 
-	if parent.Children == nil {
-		parent.Children = &[]Node{}
-	}
-
-	*parent.Children = append(*parent.Children, *newNode)
 	return nil
 }
 
@@ -104,6 +99,24 @@ func (tree Tree) ToJSON() (string, error) {
 	}
 
 	return string(json), nil
+}
+
+func (tree Tree) Print() error {
+	str, err := tree.ToJSON()
+	if err != nil {
+		return err
+	}
+
+	var obj map[string]interface{}
+	json.Unmarshal([]byte(str), &obj)
+
+	formatter := colorjson.NewFormatter()
+	formatter.Indent = 2
+
+	s, _ := formatter.Marshal(obj)
+	fmt.Println("\n", string(s))
+
+	return nil
 }
 
 func FromJSON(value string) (*Tree, error) {
