@@ -1,3 +1,4 @@
+
 ### Reasons for some important decisions
 
 #### The moving parent dilemma
@@ -21,3 +22,6 @@ After having this idea, I've researched a little bit and found this interesting 
 I'll leave this idea on a wishlist, considering it will make the code harder to read.
 
 Once someone said: 'It is really easy to add concurrency to go, but it's almost impossible to remove it'
+
+### References
+https://blog.codeship.com/implementing-a-bdd-workflow-in-go/
