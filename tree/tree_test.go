@@ -195,11 +195,7 @@ func TestGetDescendants(t *testing.T) {
 						}
 					]`)
 					expectedHierarchy := []*Node{}
-					unmarshallError := json.Unmarshal(expectedHierarchyJSON, &expectedHierarchy)
-
-					Convey("I should not have an unmarshall error", func() {
-						So(unmarshallError, ShouldEqual, nil)
-					})
+					json.Unmarshal(expectedHierarchyJSON, &expectedHierarchy)
 
 					resultingHierarchyJSON, _ := json.Marshal(response.subordinates.hierarchy)
 					resultingHierarchy := []*Node{}
@@ -211,6 +207,86 @@ func TestGetDescendants(t *testing.T) {
 
 					Convey("It resembles the expected JSON", func() {
 						So(response.subordinates.hierarchy, ShouldResemble, expectedHierarchy)
+					})
+				})
+			})
+		})
+	})
+}
+
+func TestDetachNode(t *testing.T) {
+	Convey("Given an initial Tree with any valid name", t, func() {
+		chart, _ := Create("normal")
+
+		Convey("When I insert nodes to create a complex tree", func() {
+			rootNode, _ := chart.GetRoot()
+			aNode := Node{ID: "a"}
+			bNode := Node{ID: "b"}
+			cNode := Node{ID: "c"}
+			dNode := Node{ID: "d"}
+			eNode := Node{ID: "e"}
+			fNode := Node{ID: "f"}
+
+			chart.InsertNode(&aNode, rootNode)
+			chart.InsertNode(&bNode, rootNode)
+			chart.InsertNode(&cNode, &aNode)
+			chart.InsertNode(&dNode, rootNode)
+			chart.InsertNode(&eNode, &cNode)
+			chart.InsertNode(&fNode, &cNode)
+
+			Convey("Then when I get detach the node `c`", func() {
+				detachedNode, detachErr := chart.DetachNode(&cNode)
+
+				Convey("I should not have an error", func() {
+					So(detachErr, ShouldEqual, nil)
+				})
+
+				response, descErr := rootNode.GetDescendants()
+
+				Convey("The count of direct subordinates should equal 3", func() {
+					So(response.subordinates.count.direct, ShouldEqual, 3)
+				})
+
+				Convey("I should not have an error getting the descendants of the detached tree", func() {
+					So(descErr, ShouldEqual, nil)
+				})
+
+				Convey("The `hierarchy` of the tree should resemble expected JSON", func() {
+					expectedHierarchyJSON := []byte(`[{
+							"id": "a",
+							"parentId": "1"
+						},
+						{
+							"id": "b",
+							"parentId": "1"
+						},
+						{
+							"id": "d",
+							"parentId": "1"
+						}
+					]`)
+					expectedHierarchy := []*Node{}
+					json.Unmarshal(expectedHierarchyJSON, &expectedHierarchy)
+
+					resultingHierarchyJSON, _ := json.Marshal(response.subordinates.hierarchy)
+					resultingHierarchy := []*Node{}
+					resultingErr := json.Unmarshal([]byte(resultingHierarchyJSON), &resultingHierarchy)
+
+					Convey("I should not have an unmarshall error for the resulting structure", func() {
+						So(resultingErr, ShouldEqual, nil)
+					})
+
+					Convey("It resembles the expected JSON", func() {
+						So(response.subordinates.hierarchy, ShouldResemble, expectedHierarchy)
+					})
+				})
+
+				Convey("And when I attach the detached node to the root", func() {
+					chart.InsertNode(detachedNode, chart.Root)
+
+					Convey("The count of direct subordinates should equal 4", func() {
+						response, _ := rootNode.GetDescendants()
+						So(response.subordinates.count.direct, ShouldEqual, 4)
 					})
 
 				})

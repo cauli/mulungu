@@ -138,6 +138,45 @@ func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
 	return nil
 }
 
+func (tree Tree) DetachNode(node *Node) (*Node, error) {
+	if node == nil {
+		return nil, fmt.Errorf("Must provide a new node to detach")
+	}
+
+	if node == tree.Root {
+		return nil, fmt.Errorf("Cannot detach root node from tree. Where would you attach it?")
+	}
+
+	parentNode, err := tree.FindNode(node.ParentID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Could no find find parent node to detach.\nDetails: '%v'", err)
+	}
+
+	parentNode.RemoveChildren(node)
+
+	return node, nil
+}
+
+func (node *Node) RemoveChildren(childToRemove *Node) {
+	indexToRemove := -1
+
+	for index, child := range node.Children {
+		if child.ID == childToRemove.ID {
+			indexToRemove = index
+			childToRemove.ParentID = ""
+			break
+		}
+	}
+
+	if indexToRemove != -1 {
+		node.Children = append(node.Children[:indexToRemove], node.Children[indexToRemove+1:]...)
+
+		if len(node.Children) == 0 {
+			node.Children = nil
+		}
+	}
+}
+
 func (node *Node) countAllDescendants() int {
 	var totalCount int
 
