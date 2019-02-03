@@ -89,40 +89,6 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 	return nil, nil
 }
 
-func (tree Tree) GetDescendants(id string) ([]*Node, error) {
-	node, err := tree.FindNode(id, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if node == nil {
-		return nil, fmt.Errorf("ID `%s` was not found", id)
-	}
-
-	return node.Children, nil
-}
-
-func (node *Node) GetDescendants() (SubordinatesResponse, error) {
-	directCount := len(node.Children)
-
-	totalCount := 0
-	for _, descendant := range node.Children {
-		totalCount += descendant.countAllDescendants() + 1
-	}
-
-	response := SubordinatesResponse{
-		subordinates: SubordinatesInfo{
-			count: SubordinatesCount{
-				direct: directCount,
-				total:  totalCount,
-			},
-			hierarchy: node.Children,
-		},
-	}
-
-	return response, nil
-}
-
 func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
 	if parent == nil || newNode == nil {
 		return fmt.Errorf("Must provide a new node and parent to attach it to")
@@ -164,34 +130,4 @@ func (tree Tree) DetachNode(node *Node) (*Node, error) {
 	parentNode.RemoveChildren(node)
 
 	return node, nil
-}
-
-func (node *Node) RemoveChildren(childToRemove *Node) {
-	indexToRemove := -1
-
-	for index, child := range node.Children {
-		if child.ID == childToRemove.ID {
-			indexToRemove = index
-			childToRemove.ParentID = ""
-			break
-		}
-	}
-
-	if indexToRemove != -1 {
-		node.Children = append(node.Children[:indexToRemove], node.Children[indexToRemove+1:]...)
-
-		if len(node.Children) == 0 {
-			node.Children = nil
-		}
-	}
-}
-
-func (node *Node) countAllDescendants() int {
-	var totalCount int
-
-	for _, descendant := range node.Children {
-		totalCount += descendant.countAllDescendants() + 1
-	}
-
-	return totalCount
 }
