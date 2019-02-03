@@ -39,13 +39,22 @@ func Create(treeId string) (*Tree, error) {
 	return tree, nil
 }
 
+func (tree Tree) GetRoot() (*Node, error) {
+	if tree.Root == nil {
+		return nil, fmt.Errorf("Tree does not contain a root node")
+	}
+
+	return tree.Root, nil
+}
+
 func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 	if currentNode == nil {
-		if tree.Root == nil {
-			return nil, fmt.Errorf("Tree does not contain a root node")
+		rootNode, err := tree.GetRoot()
+		if err != nil {
+			return nil, err
 		}
 
-		currentNode = tree.Root
+		currentNode = rootNode
 	}
 
 	if currentNode.Id == id {
@@ -69,7 +78,7 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 	return nil, nil
 }
 
-func (tree Tree) Insert(newNode *Node, parent *Node) error {
+func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
 	if parent == nil {
 		return fmt.Errorf("Must provide a parent node")
 	}
