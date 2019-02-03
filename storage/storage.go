@@ -18,7 +18,7 @@ func GetById(resourceType string, id string) (exists bool, value interface{}) {
 		return false, nil
 	}
 
-	return true, *item
+	return true, (*item).Value()
 }
 
 func Delete(resourceType string, id string) bool {

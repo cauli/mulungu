@@ -16,8 +16,8 @@ func main() {
 
 	e.GET("/chart/:chartId/employee/:employeeId/subordinates", controllers.GetSubordinates)
 
-	e.PUT("/chart/:chartId/employee/:employeeId/boss/:bossId", controllers.UpdateBoss)
-	e.POST("/chart/:chartId/employee/:employeeId/boss/:bossId", controllers.UpdateBoss)
+	e.PUT("/chart/:chartId/employee/:employeeId/leader/:leaderId", controllers.UpdateLeader)
+	e.POST("/chart/:chartId/employee/:employeeId/leader/:leaderId", controllers.UpdateLeader)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

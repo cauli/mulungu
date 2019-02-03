@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo"
 
 	"../../storage"
+	"../../tree"
 )
 
 const resource = "tree"
@@ -17,7 +18,6 @@ func GetChart(c echo.Context) error {
 	chartID := c.Param("chartId")
 
 	exists, value := storage.GetById(resource, chartID)
-
 	if !exists {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Chart `%v` does not exist", chartID))
 	}
@@ -30,16 +30,22 @@ func GetChart(c echo.Context) error {
 func CreateChart(c echo.Context) error {
 	chartID := c.Param("chartId")
 
-	value, err := storage.GetById(resource, chartID)
+	exists, _ := storage.GetById(resource, chartID)
+	if exists {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Chart `%v` already exists", chartID))
+	}
+
+	chart, err := tree.Create(chartID)
 	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Chart `%v` already exists", chartID))
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Chart `%v` was not created due to an error", chartID))
 	}
 
-	if value {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Chart `%v` already exists", chartID))
+	json, err := chart.ToJSON()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	storage.Save(resource, chartID, "test")
+	storage.Save(resource, chartID, json)
 	return c.String(http.StatusOK, fmt.Sprintf("Chart `%v` was created", chartID))
 }
 

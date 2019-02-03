@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"../../storage"
+	"../../tree"
+
 	"github.com/labstack/echo"
 )
 
@@ -13,15 +16,34 @@ func GetSubordinates(c echo.Context) error {
 	chartID := c.Param("chartId")
 	employeeID := c.Param("employeeId")
 
-	return c.String(http.StatusOK, fmt.Sprintf("GetSubordinates Chart ID: %v\n Employee ID: %v", chartID, employeeID))
+	exists, value := storage.GetById(resource, chartID)
+	if !exists {
+		return c.String(http.StatusNotFound, fmt.Sprintf("Chart `%v` does not exist", chartID))
+	}
+
+	chart, err := tree.FromJSON(value.(string))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Could not parse value for chart `%v`", chartID))
+	}
+
+	employee, err := chart.FindNode(employeeID, nil)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	if employee == nil {
+		return c.String(http.StatusNotFound, fmt.Sprintf("Employee ID `%v` not found for chart `%v`", employeeID, chartID))
+	}
+
+	return c.String(http.StatusOK, fmt.Sprintf("Found employee ID `%v` on Chart ID `%v`\n%v", employeeID, chartID, employee))
 }
 
-// UpdateBoss changes the parent node (boss) of a node
-// [POST, PUT] /chartId/:chartId/employee/:employeeId/boss/:bossId
-func UpdateBoss(c echo.Context) error {
+// UpdateLeader changes the parent node (boss) of a node
+// [POST, PUT] /chartId/:chartId/employee/:employeeId/leader/:leaderId
+func UpdateLeader(c echo.Context) error {
 	chartID := c.Param("chartId")
 	employeeID := c.Param("employeeId")
-	bossID := c.Param("bossId")
+	leaderID := c.Param("leaderId")
 
-	return c.String(http.StatusOK, fmt.Sprintf("UpdateBoss Chart ID: %v\nEmployee ID: %v\nBoss ID: %v", chartID, employeeID, bossID))
+	return c.String(http.StatusOK, fmt.Sprintf("UpdateLeader Chart ID: %v\nEmployee ID: %v\nLeader ID: %v", chartID, employeeID, leaderID))
 }
