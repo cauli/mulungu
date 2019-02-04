@@ -25,7 +25,7 @@ type SubordinatesCount struct {
 
 func Create(treeId string) (*Tree, error) {
 	rootNode := Node{
-		ID: "1", //uuid.New().String(),
+		ID: "root", //uuid.New().String(),
 		Data: MetaData{
 			Name:  "#1",
 			Title: "Founder",

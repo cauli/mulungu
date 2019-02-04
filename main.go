@@ -16,6 +16,8 @@ func main() {
 
 	e.GET("/chart/:chartId/employee/:employeeId/subordinates", controllers.GetSubordinates)
 
+	e.PUT("/chart/:chartId/employee/:employeeId", controllers.CreateEmployee)
+
 	e.PUT("/chart/:chartId/employee/:employeeId/leader/:leaderId", controllers.UpdateLeader)
 	e.POST("/chart/:chartId/employee/:employeeId/leader/:leaderId", controllers.UpdateLeader)
 
