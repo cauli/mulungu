@@ -330,3 +330,55 @@ func TestDetachNode(t *testing.T) {
 		})
 	})
 }
+
+func TestMoveNode(t *testing.T) {
+	Convey("Given a Tree with some nodes", t, func() {
+		chart, _ := Create("normal")
+
+		rootNode, _ := chart.GetRoot()
+		aNode := Node{ID: "a"}
+		bNode := Node{ID: "b"}
+		cNode := Node{ID: "c"}
+		dNode := Node{ID: "d"}
+		fNode := Node{ID: "d"}
+
+		chart.InsertNode(&aNode, rootNode)
+		chart.InsertNode(&bNode, rootNode)
+		chart.InsertNode(&cNode, &aNode)
+		chart.InsertNode(&dNode, rootNode)
+		chart.InsertNode(&fNode, rootNode)
+
+		Convey("The count of direct subordinates of root should equal 4", func() {
+			response, _ := rootNode.GetDescendants()
+			So(response.subordinates.count.direct, ShouldEqual, 4)
+		})
+
+		Convey("The count of direct subordinates of `d` should equal 0", func() {
+			response, _ := dNode.GetDescendants()
+			So(response.subordinates.count.direct, ShouldEqual, 0)
+		})
+
+		Convey("When I move node `a` to new parent `d`", func() {
+			moveErr := chart.MoveNode(&aNode, &dNode)
+
+			Convey("I should not have an error", func() {
+				So(moveErr, ShouldEqual, nil)
+			})
+
+			Convey("The count of direct subordinates of root should equal 3", func() {
+				response, _ := rootNode.GetDescendants()
+				So(response.subordinates.count.direct, ShouldEqual, 3)
+			})
+
+			Convey("The count of direct subordinates of `d` should equal 1", func() {
+				response, _ := dNode.GetDescendants()
+				So(response.subordinates.count.direct, ShouldEqual, 1)
+			})
+
+			Convey("The total count subordinates of `d` should equal 2", func() {
+				response, _ := dNode.GetDescendants()
+				So(response.subordinates.count.total, ShouldEqual, 2)
+			})
+		})
+	})
+}
