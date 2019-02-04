@@ -1,5 +1,17 @@
 package tree
 
+type Node struct {
+	ID       string   `json:"id"`
+	Data     MetaData `json:"metadata,omitempty"`
+	Children []*Node  `json:"children,omitempty"`
+	ParentID string   `json:"parentId,omitEmpty"`
+}
+
+type MetaData struct {
+	Name  string `json:"name,omitempty"`
+	Title string `json:"title,omitempty"`
+}
+
 func (node *Node) RemoveChildren(childToRemove *Node) {
 	indexToRemove := -1
 

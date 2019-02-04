@@ -9,18 +9,6 @@ type Tree struct {
 	Root *Node  `json:"root"`
 }
 
-type Node struct {
-	ID       string   `json:"id"`
-	Data     MetaData `json:"metadata,omitempty"`
-	Children []*Node  `json:"children,omitempty"`
-	ParentID string   `json:"parentId,omitEmpty"`
-}
-
-type MetaData struct {
-	Name  string `json:"name,omitempty"`
-	Title string `json:"title,omitempty"`
-}
-
 type SubordinatesResponse struct {
 	subordinates SubordinatesInfo `json:"subordinates"`
 }
@@ -124,10 +112,28 @@ func (tree Tree) DetachNode(node *Node) (*Node, error) {
 
 	parentNode, err := tree.FindNode(node.ParentID, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Could no find find parent node to detach.\nDetails: '%v'", err)
+		return nil, fmt.Errorf("Could not find parent node to detach on this tree.\nDetails: '%v'", err)
 	}
 
 	parentNode.RemoveChildren(node)
 
 	return node, nil
+}
+
+func (tree Tree) MoveNode(node *Node, newParent *Node) error {
+	if node == nil || newParent == nil {
+		return fmt.Errorf("Must provide a node to move and parent to attach it to")
+	}
+
+	detachedNode, err := tree.DetachNode(node)
+	if err != nil {
+		return fmt.Errorf("Unable to detach node from tree.\nDetails: %s", detachedNode)
+	}
+
+	tree.InsertNode(detachedNode, newParent)
+	if err != nil {
+		return fmt.Errorf("Unable to attach node to new parent.\nDetails: %s", detachedNode)
+	}
+
+	return nil
 }
