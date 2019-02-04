@@ -17,3 +17,9 @@ func New(code int, message string) Response {
 		},
 	}
 }
+
+type ApiError struct {
+	Error   error
+	Message string
+	Code    int
+}

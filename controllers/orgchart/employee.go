@@ -17,14 +17,14 @@ func GetSubordinates(c echo.Context) error {
 	chartID := c.Param("chartId")
 	employeeID := c.Param("employeeId")
 
-	chart, err := findChart(c, chartID)
-	if err != nil {
-		return err
+	chart, apiErr := findChart(chartID)
+	if apiErr != nil {
+		return c.String(apiErr.Code, apiErr.Message)
 	}
 
-	employee, err := findEmployee(c, employeeID, chart)
-	if err != nil {
-		return err
+	employee, apiErr := findEmployee(employeeID, chart, true)
+	if apiErr != nil {
+		return c.String(apiErr.Code, apiErr.Message)
 	}
 
 	subordinates, err := (*employee).GetDescendants()
@@ -39,23 +39,75 @@ func GetSubordinates(c echo.Context) error {
 // [PUT] /chartId/:chartId/employee/:employeeId
 func CreateEmployee(c echo.Context) error {
 	chartID := c.Param("chartId")
+	isUpdating := false
 
 	requestEmployee, err := parseRequestEmployee(c)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid request body for Employee")
 	}
 
-	chart, err := findChart(c, chartID)
-	if err != nil {
-		return err
+	chart, apiErr := findChart(chartID)
+	if apiErr != nil {
+		return c.String(apiErr.Code, apiErr.Message)
 	}
 
-	employee, err := findEmployee(c, requestEmployee.ID, chart)
-	if err != nil {
-		return err
+	employee, apiErr := findEmployee(requestEmployee.ID, chart, false)
+	if apiErr != nil {
+		return c.String(apiErr.Code, apiErr.Message)
 	}
 
-	return c.JSON(http.StatusOK, employee)
+	if employee != nil {
+		isUpdating = true
+
+		(*employee).Data = tree.MetaData{
+			Name:  requestEmployee.Name,
+			Title: requestEmployee.Title,
+		}
+
+		if (*employee).ParentID != requestEmployee.Leader {
+			desiredLeader, apiErr := findEmployee(requestEmployee.Leader, chart, true)
+			if apiErr != nil {
+				return c.String(apiErr.Code, apiErr.Message)
+			}
+
+			err = chart.MoveNode(employee, desiredLeader)
+			if err != nil {
+				return c.String(http.StatusBadRequest, fmt.Sprintf("Could not update employee's new leader.\nDetails:%s", err.Error()))
+			}
+		}
+	} else {
+		newEmployee := tree.Node{
+			ID: requestEmployee.ID,
+			Data: tree.MetaData{
+				Name:  requestEmployee.Name,
+				Title: requestEmployee.Title,
+			},
+			ParentID: requestEmployee.Leader,
+		}
+
+		desiredLeader, apiErr := findEmployee(requestEmployee.Leader, chart, true)
+		if apiErr != nil {
+			return c.String(apiErr.Code, apiErr.Message)
+		}
+
+		err = chart.InsertNode(&newEmployee, desiredLeader)
+		if err != nil {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("Could not add new employee to the chart.\nDetails:%s", err.Error()))
+		}
+	}
+
+	chartJSON, err := chart.ToJSON()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	storage.Save(resource, chartID, chartJSON)
+
+	if isUpdating {
+		return c.JSON(http.StatusOK, "Employee was successfully updated")
+	}
+
+	return c.JSON(http.StatusOK, "Employee was successfully created")
 }
 
 // UpdateLeader changes the leader of an employee.
@@ -66,14 +118,14 @@ func UpdateLeader(c echo.Context) error {
 	employeeID := c.Param("employeeId")
 	leaderID := c.Param("leaderId")
 
-	chart, err := findChart(c, chartID)
-	if err != nil {
-		return err
+	chart, apiErr := findChart(chartID)
+	if apiErr != nil {
+		return c.String(apiErr.Code, apiErr.Message)
 	}
 
-	employee, err := findEmployee(c, employeeID, chart)
-	if err != nil {
-		return err
+	employee, apiErr := findEmployee(employeeID, chart, true)
+	if apiErr != nil {
+		return c.String(apiErr.Code, apiErr.Message)
 	}
 
 	leader, err := chart.FindNode(leaderID, nil)
@@ -92,33 +144,32 @@ func UpdateLeader(c echo.Context) error {
 	return c.String(http.StatusOK, fmt.Sprintf("UpdateLeader Chart ID: %v\nEmployee ID: %v\nLeader ID: %v", chartID, employeeID, leaderID))
 }
 
-func findEmployee(c echo.Context, employeeID string, chart *tree.Tree) (*tree.Node, error) {
+func findEmployee(employeeID string, chart *tree.Tree, isFindingRequired bool) (*tree.Node, *models.ApiError) {
 	if chart == nil {
-		return nil, c.String(http.StatusBadRequest, "Chart was invalid while finding employee")
+		return nil, &models.ApiError{nil, "Chart was invalid while finding employee", http.StatusBadRequest}
 	}
 
 	employee, err := chart.FindNode(employeeID, nil)
-
 	if err != nil {
-		return nil, c.String(http.StatusInternalServerError, err.Error())
+		return nil, &models.ApiError{nil, err.Error(), http.StatusInternalServerError}
 	}
 
-	if employee == nil {
-		return nil, c.String(http.StatusNotFound, fmt.Sprintf("Employee ID `%v` not found for chart `%v`", employeeID, chart.Id))
+	if isFindingRequired && employee == nil {
+		return nil, &models.ApiError{nil, fmt.Sprintf("Employee ID `%v` not found for chart `%v`", employeeID, chart.Id), http.StatusNotFound}
 	}
 
 	return employee, nil
 }
 
-func findChart(c echo.Context, chartID string) (*tree.Tree, error) {
+func findChart(chartID string) (*tree.Tree, *models.ApiError) {
 	exists, value := storage.GetById(resource, chartID)
 	if !exists {
-		return nil, c.String(http.StatusNotFound, fmt.Sprintf("Chart `%v` does not exist", chartID))
+		return nil, &models.ApiError{nil, fmt.Sprintf("Chart `%v` does not exist", chartID), http.StatusNotFound}
 	}
 
 	chart, err := tree.FromJSON(value.(string))
 	if err != nil {
-		return nil, c.String(http.StatusInternalServerError, fmt.Sprintf("Could not parse value for chart `%v`", chartID))
+		return nil, &models.ApiError{nil, fmt.Sprintf("Could not parse value for chart `%v`", chartID), http.StatusInternalServerError}
 	}
 
 	return chart, nil
