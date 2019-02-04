@@ -10,17 +10,17 @@ type Tree struct {
 }
 
 type SubordinatesResponse struct {
-	subordinates SubordinatesInfo `json:"subordinates"`
+	Subordinates SubordinatesInfo `json:"subordinates"`
 }
 
 type SubordinatesInfo struct {
-	count     SubordinatesCount `json:"count"`
-	hierarchy []*Node           `json:"hierarchy"`
+	Count     SubordinatesCount `json:"count"`
+	Hierarchy []*Node           `json:"hierarchy,omitempty"`
 }
 
 type SubordinatesCount struct {
-	direct int `json:"direct,omitempty"`
-	total  int `json:"total,omitempty"`
+	Direct int `json:"direct"`
+	Total  int `json:"total"`
 }
 
 func Create(treeId string) (*Tree, error) {

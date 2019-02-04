@@ -41,12 +41,12 @@ func (node *Node) GetDescendants() (SubordinatesResponse, error) {
 	}
 
 	response := SubordinatesResponse{
-		subordinates: SubordinatesInfo{
-			count: SubordinatesCount{
-				direct: directCount,
-				total:  totalCount,
+		Subordinates: SubordinatesInfo{
+			Count: SubordinatesCount{
+				Direct: directCount,
+				Total:  totalCount,
 			},
-			hierarchy: node.Children,
+			Hierarchy: node.Children,
 		},
 	}
 

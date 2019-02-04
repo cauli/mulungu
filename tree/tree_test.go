@@ -162,11 +162,11 @@ func TestGetDescendants(t *testing.T) {
 				})
 
 				Convey("The count of direct subordinates should equal 3", func() {
-					So(response.subordinates.count.direct, ShouldEqual, 3)
+					So(response.Subordinates.Count.Direct, ShouldEqual, 3)
 				})
 
 				Convey("The total count of subordinates should equal 6", func() {
-					So(response.subordinates.count.total, ShouldEqual, 6)
+					So(response.Subordinates.Count.Total, ShouldEqual, 6)
 				})
 
 				Convey("The `hierarchy` should resemble expected JSON", func() {
@@ -197,7 +197,7 @@ func TestGetDescendants(t *testing.T) {
 					expectedHierarchy := []*Node{}
 					json.Unmarshal(expectedHierarchyJSON, &expectedHierarchy)
 
-					resultingHierarchyJSON, _ := json.Marshal(response.subordinates.hierarchy)
+					resultingHierarchyJSON, _ := json.Marshal(response.Subordinates.Hierarchy)
 					resultingHierarchy := []*Node{}
 					resultingErr := json.Unmarshal([]byte(resultingHierarchyJSON), &resultingHierarchy)
 
@@ -206,7 +206,7 @@ func TestGetDescendants(t *testing.T) {
 					})
 
 					Convey("It resembles the expected JSON", func() {
-						So(response.subordinates.hierarchy, ShouldResemble, expectedHierarchy)
+						So(response.Subordinates.Hierarchy, ShouldResemble, expectedHierarchy)
 					})
 				})
 			})
@@ -244,7 +244,7 @@ func TestDetachNode(t *testing.T) {
 				response, descErr := rootNode.GetDescendants()
 
 				Convey("The count of direct subordinates should equal 3", func() {
-					So(response.subordinates.count.direct, ShouldEqual, 3)
+					So(response.Subordinates.Count.Direct, ShouldEqual, 3)
 				})
 
 				Convey("I should not have an error getting the descendants of the detached tree", func() {
@@ -268,7 +268,7 @@ func TestDetachNode(t *testing.T) {
 					expectedHierarchy := []*Node{}
 					json.Unmarshal(expectedHierarchyJSON, &expectedHierarchy)
 
-					resultingHierarchyJSON, _ := json.Marshal(response.subordinates.hierarchy)
+					resultingHierarchyJSON, _ := json.Marshal(response.Subordinates.Hierarchy)
 					resultingHierarchy := []*Node{}
 					resultingErr := json.Unmarshal([]byte(resultingHierarchyJSON), &resultingHierarchy)
 
@@ -277,7 +277,7 @@ func TestDetachNode(t *testing.T) {
 					})
 
 					Convey("It resembles the expected JSON", func() {
-						So(response.subordinates.hierarchy, ShouldResemble, expectedHierarchy)
+						So(response.Subordinates.Hierarchy, ShouldResemble, expectedHierarchy)
 					})
 				})
 
@@ -286,7 +286,7 @@ func TestDetachNode(t *testing.T) {
 
 					Convey("The count of direct subordinates should equal 4", func() {
 						response, _ := rootNode.GetDescendants()
-						So(response.subordinates.count.direct, ShouldEqual, 4)
+						So(response.Subordinates.Count.Direct, ShouldEqual, 4)
 					})
 				})
 			})
@@ -350,12 +350,12 @@ func TestMoveNode(t *testing.T) {
 
 		Convey("The count of direct subordinates of root should equal 4", func() {
 			response, _ := rootNode.GetDescendants()
-			So(response.subordinates.count.direct, ShouldEqual, 4)
+			So(response.Subordinates.Count.Direct, ShouldEqual, 4)
 		})
 
 		Convey("The count of direct subordinates of `d` should equal 0", func() {
 			response, _ := dNode.GetDescendants()
-			So(response.subordinates.count.direct, ShouldEqual, 0)
+			So(response.Subordinates.Count.Direct, ShouldEqual, 0)
 		})
 
 		Convey("When I move node `a` to new parent `d`", func() {
@@ -367,17 +367,17 @@ func TestMoveNode(t *testing.T) {
 
 			Convey("The count of direct subordinates of root should equal 3", func() {
 				response, _ := rootNode.GetDescendants()
-				So(response.subordinates.count.direct, ShouldEqual, 3)
+				So(response.Subordinates.Count.Direct, ShouldEqual, 3)
 			})
 
 			Convey("The count of direct subordinates of `d` should equal 1", func() {
 				response, _ := dNode.GetDescendants()
-				So(response.subordinates.count.direct, ShouldEqual, 1)
+				So(response.Subordinates.Count.Direct, ShouldEqual, 1)
 			})
 
 			Convey("The total count subordinates of `d` should equal 2", func() {
 				response, _ := dNode.GetDescendants()
-				So(response.subordinates.count.total, ShouldEqual, 2)
+				So(response.Subordinates.Count.Total, ShouldEqual, 2)
 			})
 		})
 	})
