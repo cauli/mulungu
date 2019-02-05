@@ -3,7 +3,7 @@ package tree
 type Node struct {
 	ID       string   `json:"id"`
 	Children []*Node  `json:"children,omitempty"`
-	Depth    int      `json:"depth,omitEmpty"`
+	Height   int      `json:"height,omitEmpty"`
 	Data     MetaData `json:"metadata,omitempty"`
 	ParentID string   `json:"parentId,omitEmpty"`
 	RootID   *string  `json:"rootId,omitEmpty"`
@@ -63,4 +63,12 @@ func (node *Node) countAllDescendants() int {
 	}
 
 	return totalCount
+}
+
+func (node *Node) UpdateHeight(newHeight int) {
+	node.Height = newHeight
+
+	for _, children := range node.Children {
+		children.UpdateHeight(node.Height + 1)
+	}
 }

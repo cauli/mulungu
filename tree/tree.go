@@ -30,6 +30,7 @@ func Create(treeId string) (*Tree, error) {
 			Name:  "#1",
 			Title: "Founder",
 		},
+		Height: 0,
 	}
 
 	tree := &Tree{
@@ -100,8 +101,10 @@ func (tree Tree) AttachNode(newNode *Node, parent *Node) error {
 		return err
 	}
 
-	newNode.RootID = &(*root).ID
+	newNode.RootID = &root.ID
 	newNode.ParentID = parent.ID
+	newNode.UpdateHeight(parent.Height + 1)
+
 	parent.Children = append(parent.Children, newNode)
 
 	return nil
