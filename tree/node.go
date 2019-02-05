@@ -55,6 +55,14 @@ func (node *Node) GetDescendants() (SubordinatesResponse, error) {
 	return response, nil
 }
 
+func (node *Node) UpdateHeight(newHeight int) {
+	node.Height = newHeight
+
+	for _, children := range node.Children {
+		children.UpdateHeight(node.Height + 1)
+	}
+}
+
 func (node *Node) countAllDescendants() int {
 	var totalCount int
 
@@ -63,12 +71,4 @@ func (node *Node) countAllDescendants() int {
 	}
 
 	return totalCount
-}
-
-func (node *Node) UpdateHeight(newHeight int) {
-	node.Height = newHeight
-
-	for _, children := range node.Children {
-		children.UpdateHeight(node.Height + 1)
-	}
 }
