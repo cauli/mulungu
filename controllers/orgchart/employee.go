@@ -34,9 +34,10 @@ func GetSubordinates(c echo.Context) error {
 	return c.JSON(http.StatusOK, subordinates)
 }
 
-// CreateEmployee creates or updates an employee information
+// UpsertEmployee creates or updates an employee information
+// it is also possible to update its current leader by sending a `leader` key`
 // [PUT] /chartId/:chartId/employee/:employeeId
-func CreateEmployee(c echo.Context) error {
+func UpsertEmployee(c echo.Context) error {
 	chartID := c.Param("chartId")
 	isUpdating := false
 
