@@ -173,25 +173,31 @@ func TestGetDescendants(t *testing.T) {
 					expectedHierarchyJSON := []byte(`[{
 							"id": "a",
 							"parentId": "root",
+							"rootId": "root",
 							"children": [{
 								"id": "c",
 								"parentId": "a",
+								"rootId": "root",
 								"children": [{
 									"id": "e",
-									"parentId": "c"
+									"parentId": "c",
+									"rootId": "root"
 								}, {
 									"id": "f",
-									"parentId": "c"
+									"parentId": "c",
+									"rootId": "root"
 								}]
 							}]
 						},
 						{
 							"id": "b",
-							"parentId": "root"
+							"parentId": "root",
+							"rootId": "root"
 						},
 						{
 							"id": "d",
-							"parentId": "root"
+							"parentId": "root",
+							"rootId": "root"
 						}
 					]`)
 					expectedHierarchy := []*Node{}
@@ -254,15 +260,18 @@ func TestDetachNode(t *testing.T) {
 				Convey("The `hierarchy` of the tree should resemble expected JSON", func() {
 					expectedHierarchyJSON := []byte(`[{
 							"id": "a",
-							"parentId": "root"
+							"parentId": "root",
+							"rootId": "root"
 						},
 						{
 							"id": "b",
-							"parentId": "root"
+							"parentId": "root",
+							"rootId": "root"
 						},
 						{
 							"id": "d",
-							"parentId": "root"
+							"parentId": "root",
+							"rootId": "root"
 						}
 					]`)
 					expectedHierarchy := []*Node{}

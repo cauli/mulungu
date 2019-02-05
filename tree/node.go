@@ -6,6 +6,7 @@ type Node struct {
 	Depth    int      `json:"depth,omitEmpty"`
 	Data     MetaData `json:"metadata,omitempty"`
 	ParentID string   `json:"parentId,omitEmpty"`
+	RootID   *string  `json:"rootId,omitEmpty"`
 }
 
 type MetaData struct {

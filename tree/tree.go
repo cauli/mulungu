@@ -95,6 +95,12 @@ func (tree Tree) AttachNode(newNode *Node, parent *Node) error {
 		return fmt.Errorf("The parent node does not exist on the tree")
 	}
 
+	root, err := tree.GetRoot()
+	if err != nil {
+		return err
+	}
+
+	newNode.RootID = &(*root).ID
 	newNode.ParentID = parent.ID
 	parent.Children = append(parent.Children, newNode)
 
@@ -116,6 +122,7 @@ func (tree Tree) DetachNode(node *Node) (*Node, error) {
 	}
 
 	parentNode.RemoveChildren(node)
+	node.RootID = nil
 
 	return node, nil
 }
