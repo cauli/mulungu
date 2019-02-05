@@ -40,12 +40,7 @@ func CreateChart(c echo.Context) error {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Chart `%v` already exists", chartID))
 	}
 
-	chart, err := tree.Create(chartID)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Chart `%v` was not created due to an error", chartID))
-	}
-
-	json, err := chart.ToJSON()
+	json, err := tree.New(chartID).ToJSON()
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}

@@ -7,7 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestCreate(t *testing.T) {
+func TestNew(t *testing.T) {
 	Convey("Given an initial tree with a valid id", t, func() {
 		name := "normal"
 		initialTree := Tree{
@@ -22,11 +22,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		Convey("When we create a new Tree with that same name", func() {
-			resultingTree, err := Create(name)
-
-			Convey("Then we should not have any error", func() {
-				So(err, ShouldEqual, nil)
-			})
+			resultingTree := New(name)
 
 			Convey("Then the value of the resulting tree must resemble the initial tree", func() {
 				So(*resultingTree, ShouldResemble, initialTree)
@@ -37,7 +33,7 @@ func TestCreate(t *testing.T) {
 
 func TestFindNode(t *testing.T) {
 	Convey("Given an initial Tree with any valid name", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 		var rootNode *Node
 
 		Convey("When I try to access it's Root Node directly", func() {
@@ -65,7 +61,7 @@ func TestFindNode(t *testing.T) {
 
 func TestAttachNode(t *testing.T) {
 	Convey("Given an initial Tree with any valid name", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 
 		Convey("When I insert a new node to the root node", func() {
 			rootNode, _ := chart.GetRoot()
@@ -85,7 +81,7 @@ func TestAttachNode(t *testing.T) {
 	})
 
 	Convey("Given an initial Tree with any valid name", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 
 		Convey("When I insert many nodes", func() {
 			rootNode, _ := chart.GetRoot()
@@ -136,7 +132,7 @@ func TestAttachNode(t *testing.T) {
 
 func TestDetachNode(t *testing.T) {
 	Convey("Given an initial Tree with any valid name", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 
 		Convey("When I insert nodes to create a complex tree", func() {
 			rootNode, _ := chart.GetRoot()
@@ -220,7 +216,7 @@ func TestDetachNode(t *testing.T) {
 	})
 
 	Convey("Given an initial simplistic Tree", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 		rootNode, _ := chart.GetRoot()
 
 		Convey("When I get detach the root node", func() {
@@ -233,7 +229,7 @@ func TestDetachNode(t *testing.T) {
 	})
 
 	Convey("Given a linear tree", t, func() {
-		chart, _ := Create("complex")
+		chart := New("complex")
 		rootNode, _ := chart.GetRoot()
 		aNode := Node{ID: "a"}
 		bNode := Node{ID: "b"}
@@ -259,7 +255,7 @@ func TestDetachNode(t *testing.T) {
 
 func TestMoveNode(t *testing.T) {
 	Convey("Given a Tree with some nodes", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 
 		rootNode, _ := chart.GetRoot()
 		aNode := Node{ID: "a"}

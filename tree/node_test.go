@@ -9,7 +9,7 @@ import (
 
 func TestUpdateHeight(t *testing.T) {
 	Convey("Given a tree with a deep linear structure", t, func() {
-		chart, _ := Create("line")
+		chart := New("line")
 		rootNode, _ := chart.GetRoot()
 		aNode := Node{ID: "a"}
 		bNode := Node{ID: "b"}
@@ -67,7 +67,7 @@ func TestUpdateHeight(t *testing.T) {
 
 func TestGetDescendants(t *testing.T) {
 	Convey("Given an initial Tree with any valid name", t, func() {
-		chart, _ := Create("normal")
+		chart := New("normal")
 
 		Convey("When I insert nodes to create a complex tree", func() {
 			rootNode, _ := chart.GetRoot()

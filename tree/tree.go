@@ -23,7 +23,7 @@ type SubordinatesCount struct {
 	Total  int `json:"total"`
 }
 
-func Create(treeId string) (*Tree, error) {
+func New(treeId string) *Tree {
 	rootNode := Node{
 		ID: "root",
 		Data: MetaData{
@@ -38,7 +38,7 @@ func Create(treeId string) (*Tree, error) {
 		Root: &rootNode,
 	}
 
-	return tree, nil
+	return tree
 }
 
 func (tree Tree) GetRoot() (*Node, error) {
