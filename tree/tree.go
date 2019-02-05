@@ -127,12 +127,12 @@ func (tree Tree) MoveNode(node *Node, newParent *Node) error {
 
 	detachedNode, err := tree.DetachNode(node)
 	if err != nil {
-		return fmt.Errorf("Unable to detach node from tree.\nDetails: %s", detachedNode)
+		return fmt.Errorf("Unable to detach node from tree.\nDetails: %s", err.Error())
 	}
 
 	tree.InsertNode(detachedNode, newParent)
 	if err != nil {
-		return fmt.Errorf("Unable to attach node to new parent.\nDetails: %s", detachedNode)
+		return fmt.Errorf("Unable to attach node to new parent.\nDetails: %s", err.Error())
 	}
 
 	return nil

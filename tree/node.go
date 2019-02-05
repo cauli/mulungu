@@ -5,6 +5,7 @@ type Node struct {
 	Data     MetaData `json:"metadata,omitempty"`
 	Children []*Node  `json:"children,omitempty"`
 	ParentID string   `json:"parentId,omitEmpty"`
+	Depth    int      `json:"depth,omitEmpty"`
 }
 
 type MetaData struct {
