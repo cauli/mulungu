@@ -12,7 +12,7 @@ import (
 
 const resource = "tree"
 
-// GetChart retrieves a chart
+// GetChart retrieves a chart and returns it in JSON format
 // [GET] /chart/:chartId
 func GetChart(c echo.Context) error {
 	chartID := c.Param("chartId")
@@ -22,7 +22,12 @@ func GetChart(c echo.Context) error {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Chart `%v` does not exist", chartID))
 	}
 
-	return c.String(http.StatusOK, fmt.Sprintf("Chart `%v` was found: %v", chartID, value))
+	chart, err := tree.FromJSON(value.(string))
+	if err != nil {
+		return c.String(http.StatusNotFound, fmt.Sprintf("Could not parse value for chart `%v`", chartID))
+	}
+
+	return c.JSONPretty(http.StatusOK, chart, "")
 }
 
 // CreateChart will persist a new chart with a root node

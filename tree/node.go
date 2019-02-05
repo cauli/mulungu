@@ -3,10 +3,10 @@ package tree
 type Node struct {
 	ID       string   `json:"id"`
 	Children []*Node  `json:"children,omitempty"`
-	Height   int      `json:"height,omitEmpty"`
+	Height   int      `json:"height,omitempty"`
 	Data     MetaData `json:"metadata,omitempty"`
-	ParentID string   `json:"parentId,omitEmpty"`
-	RootID   *string  `json:"rootId,omitEmpty"`
+	ParentID string   `json:"parentId,omitempty"`
+	RootID   *string  `json:"rootId,omitempty"`
 }
 
 type MetaData struct {
