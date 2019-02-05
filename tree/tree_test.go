@@ -63,7 +63,7 @@ func TestFindNode(t *testing.T) {
 	})
 }
 
-func TestInsertNode(t *testing.T) {
+func TestAttachNode(t *testing.T) {
 	Convey("Given an initial Tree with any valid name", t, func() {
 		chart, _ := Create("normal")
 
@@ -71,7 +71,7 @@ func TestInsertNode(t *testing.T) {
 			rootNode, _ := chart.GetRoot()
 			insertedNode := &Node{ID: "2"}
 
-			err := chart.InsertNode(insertedNode, rootNode)
+			err := chart.AttachNode(insertedNode, rootNode)
 
 			Convey("Then we should not have any error", func() {
 				So(err, ShouldEqual, nil)
@@ -94,10 +94,10 @@ func TestInsertNode(t *testing.T) {
 			cNode := Node{ID: "c"}
 			dNode := Node{ID: "d"}
 
-			aErr := chart.InsertNode(&aNode, rootNode)
-			bErr := chart.InsertNode(&bNode, rootNode)
-			cErr := chart.InsertNode(&cNode, &aNode)
-			dErr := chart.InsertNode(&dNode, rootNode)
+			aErr := chart.AttachNode(&aNode, rootNode)
+			bErr := chart.AttachNode(&bNode, rootNode)
+			cErr := chart.AttachNode(&cNode, &aNode)
+			dErr := chart.AttachNode(&dNode, rootNode)
 
 			Convey("Then we should not have an error inserting `a`", func() {
 				So(aErr, ShouldEqual, nil)
@@ -147,12 +147,12 @@ func TestGetDescendants(t *testing.T) {
 			eNode := Node{ID: "e"}
 			fNode := Node{ID: "f"}
 
-			chart.InsertNode(&aNode, rootNode)
-			chart.InsertNode(&bNode, rootNode)
-			chart.InsertNode(&cNode, &aNode)
-			chart.InsertNode(&dNode, rootNode)
-			chart.InsertNode(&eNode, &cNode)
-			chart.InsertNode(&fNode, &cNode)
+			chart.AttachNode(&aNode, rootNode)
+			chart.AttachNode(&bNode, rootNode)
+			chart.AttachNode(&cNode, &aNode)
+			chart.AttachNode(&dNode, rootNode)
+			chart.AttachNode(&eNode, &cNode)
+			chart.AttachNode(&fNode, &cNode)
 
 			Convey("Then when I get the descendants of the root node", func() {
 				response, subErr := rootNode.GetDescendants()
@@ -227,12 +227,12 @@ func TestDetachNode(t *testing.T) {
 			eNode := Node{ID: "e"}
 			fNode := Node{ID: "f"}
 
-			chart.InsertNode(&aNode, rootNode)
-			chart.InsertNode(&bNode, rootNode)
-			chart.InsertNode(&cNode, &aNode)
-			chart.InsertNode(&dNode, rootNode)
-			chart.InsertNode(&eNode, &cNode)
-			chart.InsertNode(&fNode, &cNode)
+			chart.AttachNode(&aNode, rootNode)
+			chart.AttachNode(&bNode, rootNode)
+			chart.AttachNode(&cNode, &aNode)
+			chart.AttachNode(&dNode, rootNode)
+			chart.AttachNode(&eNode, &cNode)
+			chart.AttachNode(&fNode, &cNode)
 
 			Convey("Then when I get detach the node `c`", func() {
 				detachedNode, detachErr := chart.DetachNode(&cNode)
@@ -282,7 +282,7 @@ func TestDetachNode(t *testing.T) {
 				})
 
 				Convey("And when I attach the detached node to the root", func() {
-					chart.InsertNode(detachedNode, chart.Root)
+					chart.AttachNode(detachedNode, chart.Root)
 
 					Convey("The count of direct subordinates should equal 4", func() {
 						response, _ := rootNode.GetDescendants()
@@ -313,15 +313,15 @@ func TestDetachNode(t *testing.T) {
 		bNode := Node{ID: "b"}
 		cNode := Node{ID: "c"}
 
-		chart.InsertNode(&aNode, rootNode)
-		chart.InsertNode(&bNode, &aNode)
-		chart.InsertNode(&cNode, &bNode)
+		chart.AttachNode(&aNode, rootNode)
+		chart.AttachNode(&bNode, &aNode)
+		chart.AttachNode(&cNode, &bNode)
 
 		Convey("When I detach a higher node (`a`)", func() {
 			detachedA, _ := chart.DetachNode(&aNode)
 
 			Convey("And try to attach it to one of its descendants (`c`)", func() {
-				attachErr := chart.InsertNode(detachedA, &cNode)
+				attachErr := chart.AttachNode(detachedA, &cNode)
 
 				Convey("Then we should have an error avoiding this edge case", func() {
 					So(attachErr, ShouldNotEqual, nil)
@@ -342,11 +342,11 @@ func TestMoveNode(t *testing.T) {
 		dNode := Node{ID: "d"}
 		fNode := Node{ID: "d"}
 
-		chart.InsertNode(&aNode, rootNode)
-		chart.InsertNode(&bNode, rootNode)
-		chart.InsertNode(&cNode, &aNode)
-		chart.InsertNode(&dNode, rootNode)
-		chart.InsertNode(&fNode, rootNode)
+		chart.AttachNode(&aNode, rootNode)
+		chart.AttachNode(&bNode, rootNode)
+		chart.AttachNode(&cNode, &aNode)
+		chart.AttachNode(&dNode, rootNode)
+		chart.AttachNode(&fNode, rootNode)
 
 		Convey("The count of direct subordinates of root should equal 4", func() {
 			response, _ := rootNode.GetDescendants()

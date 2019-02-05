@@ -77,7 +77,7 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 	return nil, nil
 }
 
-func (tree Tree) InsertNode(newNode *Node, parent *Node) error {
+func (tree Tree) AttachNode(newNode *Node, parent *Node) error {
 	if parent == nil || newNode == nil {
 		return fmt.Errorf("Must provide a new node and parent to attach it to")
 	}
@@ -130,7 +130,7 @@ func (tree Tree) MoveNode(node *Node, newParent *Node) error {
 		return fmt.Errorf("Unable to detach node from tree.\nDetails: %s", err.Error())
 	}
 
-	tree.InsertNode(detachedNode, newParent)
+	tree.AttachNode(detachedNode, newParent)
 	if err != nil {
 		return fmt.Errorf("Unable to attach node to new parent.\nDetails: %s", err.Error())
 	}

@@ -2,10 +2,10 @@ package tree
 
 type Node struct {
 	ID       string   `json:"id"`
-	Data     MetaData `json:"metadata,omitempty"`
 	Children []*Node  `json:"children,omitempty"`
-	ParentID string   `json:"parentId,omitEmpty"`
 	Depth    int      `json:"depth,omitEmpty"`
+	Data     MetaData `json:"metadata,omitempty"`
+	ParentID string   `json:"parentId,omitEmpty"`
 }
 
 type MetaData struct {

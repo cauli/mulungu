@@ -90,7 +90,7 @@ func CreateEmployee(c echo.Context) error {
 			return c.String(apiErr.Code, apiErr.Message)
 		}
 
-		err = chart.InsertNode(&newEmployee, desiredLeader)
+		err = chart.AttachNode(&newEmployee, desiredLeader)
 		if err != nil {
 			return c.String(http.StatusBadRequest, fmt.Sprintf("Could not add new employee to the chart.\nDetails:%s", err.Error()))
 		}
