@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+const brandColorRed = "\033[1;31m%s\033[0m"
 const brand = `
 	        .    ..  ..                   
 	        ..    ....                    
@@ -34,7 +35,7 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
-	fmt.Printf("\033[1;31m%s\033[0m", brand)
+	fmt.Printf(brandColorRed, brand)
 
 	e.GET("/chart/:chartId", controllers.GetChart)
 	e.PUT("/chart/:chartId", controllers.CreateChart)
