@@ -1,8 +1,7 @@
 package main
 
 import (
-	"./controllers/orgchart"
-
+	controllers "github.com/cauli/mulungu/controllers/orgchart"
 	"github.com/labstack/echo"
 )
 

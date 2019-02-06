@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"../../storage"
-	"../../tree"
-
+	"github.com/cauli/mulungu/storage"
+	"github.com/cauli/mulungu/tree"
 	"github.com/labstack/echo"
 )
 

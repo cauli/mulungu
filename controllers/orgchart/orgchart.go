@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cauli/mulungu/storage"
+	"github.com/cauli/mulungu/tree"
 	"github.com/labstack/echo"
-
-	"../../storage"
-	"../../tree"
 )
 
 const resource = "tree"

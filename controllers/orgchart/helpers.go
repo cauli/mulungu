@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"../../models"
-	"../../storage"
-	"../../tree"
-
+	"github.com/cauli/mulungu/models"
+	"github.com/cauli/mulungu/storage"
+	"github.com/cauli/mulungu/tree"
 	"github.com/labstack/echo"
 )
 

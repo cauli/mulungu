@@ -1,6 +1,6 @@
 package models
 
-import "../tree"
+import "github.com/cauli/mulungu/tree"
 
 type Employee struct {
 	ID     string `json:"id"`
