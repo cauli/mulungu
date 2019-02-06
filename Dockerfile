@@ -8,6 +8,5 @@ COPY . $GOPATH/src/github.com/cauli/mulungu/
 RUN go build -o main .
 
 EXPOSE 8080
-EXPOSE 80
 
-CMD ["/mulungu/main"]
+CMD ["/go/bin/mulungu"]

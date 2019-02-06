@@ -3,3 +3,6 @@ version: "3.7"
 services:
   mulungu:
     build: .
+    ports:
+    - "8080:8080"
+    command: go run main.go

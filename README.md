@@ -13,12 +13,32 @@ Mulungu is a service for creating and managing organizational charts, built in [
 - Fast operations, even with many nodes
 - Uses memory cache by default
 
-## Tests 
-This project uses Behavior Specifications tests, in BDDish style.  
-To run the tests, please run:
+## Running the server
+
+To run the server:
 
 ```
-$ go test -v ./...
+$ docker-compose up
+```
+
+When everything is ready, your server will be accessible via `localhost:8080`
+
+## API Overview
+
+| resource                                            	| method      	| description                                                                    	|
+|-----------------------------------------------------	|-------------	|--------------------------------------------------------------------------------	|
+| `/chart/:chartId`                                   	| GET         	| Retrieves a JSON structure with the whole chart hierarchy                      	|
+| `/chart/:chartId`                                   	| PUT         	| Inserts a new chart with id `:chartId`. By default, a `root` node is inserted. 	|
+| `/chart/:chartId`                                   	| DELETE      	| Removes `:chartId` completely                                                  	|
+| `/chart/:chartId/employee/:employeeId`              	| PUT         	| Inserts an employee to `:chartId`, or updates its info (including leader)      	|
+| `/chart/:chartId/employee/:employeeId/subordinates` 	| GET         	| Retrieves a JSON structure containing all subordinates of `:employeeId`        	|
+
+## Tests 
+This project uses Behavior Specifications tests, in BDDish style.  
+
+To run the tests:
+```
+$ docker-compose run mulungu go test -v ./...
 ```
 
 <p align="center">
