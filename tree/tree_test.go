@@ -157,14 +157,10 @@ func TestDetachNode(t *testing.T) {
 					So(detachErr, ShouldEqual, nil)
 				})
 
-				response, descErr := rootNode.GetDescendants()
+				response := rootNode.GetDescendants()
 
 				Convey("The count of direct subordinates should equal 3", func() {
 					So(response.Subordinates.Count.Direct, ShouldEqual, 3)
-				})
-
-				Convey("I should not have an error getting the descendants of the detached tree", func() {
-					So(descErr, ShouldEqual, nil)
 				})
 
 				Convey("The `hierarchy` of the tree should resemble expected JSON", func() {
@@ -207,7 +203,7 @@ func TestDetachNode(t *testing.T) {
 					chart.AttachNode(detachedNode, chart.Root)
 
 					Convey("The count of direct subordinates should equal 4", func() {
-						response, _ := rootNode.GetDescendants()
+						response := rootNode.GetDescendants()
 						So(response.Subordinates.Count.Direct, ShouldEqual, 4)
 					})
 				})
@@ -272,12 +268,12 @@ func TestMoveNode(t *testing.T) {
 
 		Convey("When the initial chart is ready", func() {
 			Convey("The count of direct subordinates of root should equal 4", func() {
-				response, _ := rootNode.GetDescendants()
+				response := rootNode.GetDescendants()
 				So(response.Subordinates.Count.Direct, ShouldEqual, 4)
 			})
 
 			Convey("The count of direct subordinates of `d` should equal 0", func() {
-				response, _ := dNode.GetDescendants()
+				response := dNode.GetDescendants()
 				So(response.Subordinates.Count.Direct, ShouldEqual, 0)
 			})
 		})
@@ -290,17 +286,17 @@ func TestMoveNode(t *testing.T) {
 			})
 
 			Convey("The count of direct subordinates of root should equal 3", func() {
-				response, _ := rootNode.GetDescendants()
+				response := rootNode.GetDescendants()
 				So(response.Subordinates.Count.Direct, ShouldEqual, 3)
 			})
 
 			Convey("The count of direct subordinates of `d` should equal 1", func() {
-				response, _ := dNode.GetDescendants()
+				response := dNode.GetDescendants()
 				So(response.Subordinates.Count.Direct, ShouldEqual, 1)
 			})
 
 			Convey("The total count subordinates of `d` should equal 2", func() {
-				response, _ := dNode.GetDescendants()
+				response := dNode.GetDescendants()
 				So(response.Subordinates.Count.Total, ShouldEqual, 2)
 			})
 		})

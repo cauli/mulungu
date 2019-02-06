@@ -103,7 +103,7 @@ func (tree Tree) AttachNode(newNode *Node, parent *Node) error {
 
 	newNode.RootID = &root.ID
 	newNode.ParentID = parent.ID
-	newNode.UpdateHeight(parent.Height + 1)
+	newNode.updateHeight(parent.Height + 1)
 
 	parent.Children = append(parent.Children, newNode)
 
@@ -124,7 +124,7 @@ func (tree Tree) DetachNode(node *Node) (*Node, error) {
 		return nil, fmt.Errorf("Could not find parent node to detach on this tree.\nDetails: '%v'", err)
 	}
 
-	parentNode.RemoveChildren(node)
+	parentNode.removeChildren(node)
 	node.RootID = nil
 
 	return node, nil

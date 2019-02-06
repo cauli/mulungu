@@ -86,11 +86,7 @@ func TestGetDescendants(t *testing.T) {
 			chart.AttachNode(&fNode, &cNode)
 
 			Convey("Then when I get the descendants of the root node", func() {
-				response, subErr := rootNode.GetDescendants()
-
-				Convey("I should not have an error", func() {
-					So(subErr, ShouldEqual, nil)
-				})
+				response := rootNode.GetDescendants()
 
 				Convey("The count of direct subordinates should equal 3", func() {
 					So(response.Subordinates.Count.Direct, ShouldEqual, 3)

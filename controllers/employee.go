@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cauli/mulungu/model"
 	"github.com/cauli/mulungu/storage"
 	"github.com/cauli/mulungu/tree"
 	"github.com/labstack/echo"
@@ -15,26 +16,23 @@ func GetSubordinates(c echo.Context) error {
 	chartID := c.Param("chartId")
 	employeeID := c.Param("employeeId")
 
-	chart, apiErr := findChart(chartID)
-	if apiErr != nil {
-		return c.String(apiErr.Code, apiErr.Message)
-	}
-
-	employee, apiErr := findEmployee(employeeID, chart, true)
-	if apiErr != nil {
-		return c.String(apiErr.Code, apiErr.Message)
-	}
-
-	subordinates, err := (*employee).GetDescendants()
+	chart, err := findChart(chartID)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return err.Handle(c)
 	}
+
+	employee, err := findEmployee(employeeID, chart, true)
+	if err != nil {
+		return err.Handle(c)
+	}
+
+	subordinates := (*employee).GetDescendants()
 
 	return c.JSON(http.StatusOK, subordinates)
 }
 
 // UpsertEmployee creates or updates an employee information
-// it is also possible to update its current leader by sending a `leader` key`
+// it is also possible to update its current leader by sending a `leader` key
 // [PUT] /chartId/:chartId/employee/:employeeId
 func UpsertEmployee(c echo.Context) error {
 	chartID := c.Param("chartId")
@@ -42,62 +40,80 @@ func UpsertEmployee(c echo.Context) error {
 
 	requestEmployee, err := parseRequestEmployee(c)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "Invalid request body for Employee")
+		return err.Handle(c)
 	}
 
-	chart, apiErr := findChart(chartID)
-	if apiErr != nil {
-		return c.String(apiErr.Code, apiErr.Message)
+	chart, err := findChart(chartID)
+	if err != nil {
+		return err.Handle(c)
 	}
 
-	employee, apiErr := findEmployee(requestEmployee.ID, chart, false)
-	if apiErr != nil {
-		return c.String(apiErr.Code, apiErr.Message)
+	employee, err := findEmployee(requestEmployee.ID, chart, false)
+	if err != nil {
+		return err.Handle(c)
 	}
 
 	if employee != nil {
 		isUpdating = true
 
-		(*employee).Data = tree.MetaData{
-			Name:  requestEmployee.Name,
-			Title: requestEmployee.Title,
-		}
-
-		if (*employee).ParentID != requestEmployee.Leader {
-			desiredLeader, apiErr := findEmployee(requestEmployee.Leader, chart, true)
-			if apiErr != nil {
-				return c.String(apiErr.Code, apiErr.Message)
-			}
-
-			err = chart.MoveNode(employee, desiredLeader)
-			if err != nil {
-				return c.String(http.StatusBadRequest, fmt.Sprintf("Could not update employee's new leader.\nDetails:%s", err.Error()))
-			}
+		err := updateEmployee(employee, requestEmployee, chart)
+		if err != nil {
+			return err.Handle(c)
 		}
 	} else {
-		newEmployee := requestEmployee.CreateNode()
-
-		desiredLeader, apiErr := findEmployee(requestEmployee.Leader, chart, true)
-		if apiErr != nil {
-			return c.String(apiErr.Code, apiErr.Message)
-		}
-
-		err = chart.AttachNode(newEmployee, desiredLeader)
+		err := createEmployee(requestEmployee, chart)
 		if err != nil {
-			return c.String(http.StatusBadRequest, fmt.Sprintf("Could not add new employee to the chart.\nDetails:%s", err.Error()))
+			return err.Handle(c)
 		}
 	}
 
-	chartJSON, err := chart.ToJSON()
-	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+	chartJSON, errJSON := chart.ToJSON()
+	if errJSON != nil {
+		return model.ApiError{errJSON.Error(), http.StatusInternalServerError}.Handle(c)
 	}
 
 	storage.Save(resource, chartID, chartJSON)
 
 	if isUpdating {
-		return c.JSON(http.StatusOK, "Employee was successfully updated")
+		return model.ApiResponse{"Employee was successfully updated"}.Handle(c)
 	}
 
-	return c.JSON(http.StatusOK, "Employee was successfully created")
+	return model.ApiResponse{"Employee was successfully created"}.Handle(c)
+}
+
+func updateEmployee(employee *tree.Node, requestEmployee *model.Employee, chart *tree.Tree) *model.ApiError {
+	(*employee).Data = tree.MetaData{
+		Name:  requestEmployee.Name,
+		Title: requestEmployee.Title,
+	}
+
+	if (*employee).ParentID != requestEmployee.Leader {
+		desiredLeader, err := findEmployee(requestEmployee.Leader, chart, true)
+		if err != nil {
+			return err
+		}
+
+		errMove := chart.MoveNode(employee, desiredLeader)
+		if errMove != nil {
+			return &model.ApiError{fmt.Sprintf("Could not update employee's new leader.\nDetails:%s", errMove.Error()), http.StatusBadRequest}
+		}
+	}
+
+	return nil
+}
+
+func createEmployee(requestEmployee *model.Employee, chart *tree.Tree) *model.ApiError {
+	newEmployee := requestEmployee.CreateNode()
+
+	desiredLeader, err := findEmployee(requestEmployee.Leader, chart, true)
+	if err != nil {
+		return err
+	}
+
+	errAttach := chart.AttachNode(newEmployee, desiredLeader)
+	if errAttach != nil {
+		return &model.ApiError{fmt.Sprintf("Could not add new employee.\nDetails:%s", errAttach.Error()), http.StatusBadRequest}
+	}
+
+	return nil
 }

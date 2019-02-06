@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cauli/mulungu/model"
 	"github.com/cauli/mulungu/storage"
 	"github.com/cauli/mulungu/tree"
 	"github.com/labstack/echo"
@@ -16,14 +17,21 @@ const resource = "tree"
 func GetChart(c echo.Context) error {
 	chartID := c.Param("chartId")
 
+	errID := validateID(chartID)
+	if errID != nil {
+		return errID.Handle(c)
+	}
+
 	exists, value := storage.GetById(resource, chartID)
 	if !exists {
-		return c.String(http.StatusNotFound, fmt.Sprintf("Chart `%v` does not exist", chartID))
+		message := fmt.Sprintf("Chart `%v` does not exist", chartID)
+		return model.ApiError{message, http.StatusNotFound}.Handle(c)
 	}
 
 	chart, err := tree.FromJSON(value.(string))
 	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("Could not parse value for chart `%v`", chartID))
+		message := fmt.Sprintf("Could not parse value for chart `%v`", chartID)
+		return model.ApiError{message, http.StatusInternalServerError}.Handle(c)
 	}
 
 	return c.JSONPretty(http.StatusOK, chart, "")
@@ -34,18 +42,25 @@ func GetChart(c echo.Context) error {
 func CreateChart(c echo.Context) error {
 	chartID := c.Param("chartId")
 
+	errID := validateID(chartID)
+	if errID != nil {
+		return errID.Handle(c)
+	}
+
 	exists, _ := storage.GetById(resource, chartID)
 	if exists {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Chart `%v` already exists", chartID))
+		message := fmt.Sprintf("Chart `%v` already exists", chartID)
+		return model.ApiError{message, http.StatusBadRequest}.Handle(c)
 	}
 
 	json, err := tree.New(chartID).ToJSON()
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return model.ApiError{"Could not unmarshall tree", http.StatusInternalServerError}.Handle(c)
 	}
 
 	storage.Save(resource, chartID, json)
-	return c.String(http.StatusOK, fmt.Sprintf("Chart `%v` was created", chartID))
+
+	return model.ApiResponse{fmt.Sprintf("Chart `%v` was created", chartID)}.Handle(c)
 }
 
 // DeleteChart will remove a chart from persistency
@@ -53,11 +68,16 @@ func CreateChart(c echo.Context) error {
 func DeleteChart(c echo.Context) error {
 	chartID := c.Param("chartId")
 
+	errID := validateID(chartID)
+	if errID != nil {
+		return errID.Handle(c)
+	}
+
 	deleted := storage.Delete(resource, chartID)
 
 	if deleted {
-		return c.String(http.StatusOK, fmt.Sprintf("Chart `%s` was deleted", chartID))
+		return model.ApiResponse{fmt.Sprintf("Chart `%s` was successfully deleted", chartID)}.Handle(c)
 	}
 
-	return c.String(http.StatusNotFound, fmt.Sprintf("Chart `%s` does not exist", chartID))
+	return model.ApiError{fmt.Sprintf("Chart `%s` does not exist", chartID), http.StatusNotFound}.Handle(c)
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	controllers "github.com/cauli/mulungu/controllers/orgchart"
+	"github.com/cauli/mulungu/controllers"
 	"github.com/labstack/echo"
 )
 

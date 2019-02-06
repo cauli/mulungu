@@ -14,27 +14,9 @@ type MetaData struct {
 	Title string `json:"title,omitempty"`
 }
 
-func (node *Node) RemoveChildren(childToRemove *Node) {
-	indexToRemove := -1
-
-	for index, child := range node.Children {
-		if child.ID == childToRemove.ID {
-			indexToRemove = index
-			childToRemove.ParentID = ""
-			break
-		}
-	}
-
-	if indexToRemove != -1 {
-		node.Children = append(node.Children[:indexToRemove], node.Children[indexToRemove+1:]...)
-
-		if len(node.Children) == 0 {
-			node.Children = nil
-		}
-	}
-}
-
-func (node *Node) GetDescendants() (SubordinatesResponse, error) {
+// GetDescendants returns a count and a hierarchy
+// of the subtree (excluding the current node)
+func (node *Node) GetDescendants() SubordinatesResponse {
 	directCount := len(node.Children)
 
 	totalCount := 0
@@ -52,14 +34,14 @@ func (node *Node) GetDescendants() (SubordinatesResponse, error) {
 		},
 	}
 
-	return response, nil
+	return response
 }
 
-func (node *Node) UpdateHeight(newHeight int) {
+func (node *Node) updateHeight(newHeight int) {
 	node.Height = newHeight
 
 	for _, children := range node.Children {
-		children.UpdateHeight(node.Height + 1)
+		children.updateHeight(node.Height + 1)
 	}
 }
 
@@ -71,4 +53,24 @@ func (node *Node) countAllDescendants() int {
 	}
 
 	return totalCount
+}
+
+func (node *Node) removeChildren(childToRemove *Node) {
+	indexToRemove := -1
+
+	for index, child := range node.Children {
+		if child.ID == childToRemove.ID {
+			indexToRemove = index
+			childToRemove.ParentID = ""
+			break
+		}
+	}
+
+	if indexToRemove != -1 {
+		node.Children = append(node.Children[:indexToRemove], node.Children[indexToRemove+1:]...)
+
+		if len(node.Children) == 0 {
+			node.Children = nil
+		}
+	}
 }
