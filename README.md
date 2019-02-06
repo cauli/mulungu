@@ -33,6 +33,8 @@ When everything is ready, your server will be accessible via `localhost:8080`
 | `/chart/:chartId/employee/:employeeId`              	| PUT         	| Inserts an employee to `:chartId`, or updates its info (including leader)      	|
 | `/chart/:chartId/employee/:employeeId/subordinates` 	| GET         	| Retrieves a JSON structure containing all subordinates of `:employeeId`        	|
 
+A [Postman documentation](https://documenter.getpostman.com/view/228918/RztoMTZh#intro) and a [Postman collection](https://www.getpostman.com/collections/02ef4141ff6421e376c2) are provided with full examples of requests and responses.
+
 ## Tests 
 This project uses Behavior Specifications tests, in BDDish style.  
 
