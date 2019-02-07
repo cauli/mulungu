@@ -3,7 +3,8 @@
   <img src="docs/logo.svg" title="Mulungu logo" width="200" height="200">
 </p>
 
-# Mulungu
+# Mulungu 
+[![Build Status](https://travis-ci.org/cauli/mulungu.svg?branch=master)](https://travis-ci.org/cauli/mulungu)
 
 Mulungu is a service for creating and managing organizational charts, built in [Go](https://golang.org/).
 
