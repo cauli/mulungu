@@ -21,10 +21,11 @@ const bootstrapQuery = `CREATE TABLE IF NOT EXISTS tree (
 	PRIMARY KEY (id, account)
 );`
 
+// New will generate a Storage containing a
+// pool of connections for a given resource type
 func New(resource string) (Storage, error) {
 	pool, err := pgx.NewConnPool(getConfig())
 	if err != nil {
-		fmt.Println(err)
 		return Storage{}, err
 	}
 
@@ -36,10 +37,12 @@ func New(resource string) (Storage, error) {
 	return Storage{pool, resource}, nil
 }
 
+// SetMainStorage will a single-instance storage globally
 func SetMainStorage(storage *Storage) {
 	DB = storage
 }
 
+// Load will make a SELECT query to a database given a resource an id
 func (storage *Storage) Load(resource, id string) (result string, notFound bool, e error) {
 	var response []byte
 
@@ -59,6 +62,7 @@ func (storage *Storage) Load(resource, id string) (result string, notFound bool,
 	return string(response), false, nil
 }
 
+// Delete will make a DELETE query to the database given a resource and an id
 func (storage *Storage) Delete(resource, id string) error {
 	if storage.Pool == nil {
 		return fmt.Errorf("No database connection available")
@@ -73,6 +77,7 @@ func (storage *Storage) Delete(resource, id string) error {
 	return nil
 }
 
+// Save will make a INSERT query to the database given a resource and an id
 func (storage *Storage) Save(resource, id, data string) error {
 	if storage.Pool == nil {
 		return fmt.Errorf("No database connection available")

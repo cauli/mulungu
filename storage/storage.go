@@ -7,8 +7,9 @@ import (
 	postgres "github.com/cauli/mulungu/storage/driver"
 )
 
+// Save will orchesrtate saving from the persistency,
+// inserting to the database first, then creating a cache key
 func Save(resource, id string, value interface{}) error {
-
 	err := postgres.DB.Save(resource, id, value.(string))
 	if err != nil {
 		return err
@@ -20,6 +21,8 @@ func Save(resource, id string, value interface{}) error {
 	return nil
 }
 
+// Load will orchestrate fetching from the persistency
+// trying to load from cache first, then from database
 func Load(resource string, id string) (exists bool, value interface{}) {
 	key := generateKey(resource, id)
 	item := GetGlobalCache().Mcache.Get(key)
@@ -41,6 +44,8 @@ func Load(resource string, id string) (exists bool, value interface{}) {
 	return true, (*item).Value()
 }
 
+// Delete will orchestrate deletion in the persistency
+// going to the database and than invalidating cache
 func Delete(resource string, id string) (bool, error) {
 	key := generateKey(resource, id)
 

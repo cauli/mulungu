@@ -23,7 +23,9 @@ type SubordinatesCount struct {
 	Total  int `json:"total"`
 }
 
-func New(treeId string) *Tree {
+// New will create a new tree given an id
+// by default will also create a node with id `root`
+func New(id string) *Tree {
 	rootNode := Node{
 		ID: "root",
 		Data: MetaData{
@@ -34,13 +36,14 @@ func New(treeId string) *Tree {
 	}
 
 	tree := &Tree{
-		Id:   treeId,
+		Id:   id,
 		Root: &rootNode,
 	}
 
 	return tree
 }
 
+// GetRoot will retrieve the Root Node of a tree
 func (tree Tree) GetRoot() (*Node, error) {
 	if tree.Root == nil {
 		return nil, fmt.Errorf("Tree does not contain a root node")
@@ -49,22 +52,25 @@ func (tree Tree) GetRoot() (*Node, error) {
 	return tree.Root, nil
 }
 
-func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
-	if currentNode == nil {
+// FindNode will find a node with `id` in the tree in O(n) operations
+// by default, `start` node will be the Root node
+// it is possible to define the `start` node to speed up operations
+func (tree Tree) FindNode(id string, start *Node) (*Node, error) {
+	if start == nil {
 		rootNode, err := tree.GetRoot()
 		if err != nil {
 			return nil, err
 		}
 
-		currentNode = rootNode
+		start = rootNode
 	}
 
-	if currentNode.ID == id {
-		return currentNode, nil
+	if start.ID == id {
+		return start, nil
 	}
 
-	if currentNode.Children != nil {
-		for _, child := range currentNode.Children {
+	if start.Children != nil {
+		for _, child := range start.Children {
 			foundNode, err := tree.FindNode(id, child)
 			if err != nil {
 				return nil, err
@@ -78,6 +84,9 @@ func (tree Tree) FindNode(id string, currentNode *Node) (*Node, error) {
 	return nil, nil
 }
 
+// AttachNode will receive two node pointers in a tree,
+// and will attach the first one as a subordinate of the foremost
+// this will update the entire subtree of the node being attached
 func (tree Tree) AttachNode(newNode *Node, parent *Node) error {
 	if parent == nil || newNode == nil {
 		return fmt.Errorf("Must provide a new node and parent to attach it to")
