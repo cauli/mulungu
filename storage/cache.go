@@ -2,10 +2,12 @@ package storage
 
 import "github.com/karlseguin/ccache"
 
+// GlobalMemoryCache is the model that holds the memory cache
 type GlobalMemoryCache struct {
 	Mcache *ccache.Cache
 }
 
+// GlobalCache is a single-instance accessor for the memory cache
 var GlobalCache *GlobalMemoryCache
 
 func init() {
@@ -15,6 +17,7 @@ func init() {
 	}
 }
 
+// GetGlobalCache is a helper function to get our cache storage
 func GetGlobalCache() *GlobalMemoryCache {
 	return GlobalCache
 }
