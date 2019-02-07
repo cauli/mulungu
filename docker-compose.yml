@@ -4,6 +4,7 @@ services:
   db:
     image: postgres
     environment:
+      POSTGRES_HOST: localhost
       POSTGRES_DB: mulungu
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
@@ -11,13 +12,16 @@ services:
       - 5432:5432
   mulungu:
     build: .
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_DB: mulungu
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
     ports:
     - "8080:8080"
-    command: >
-      sh -c "ls -la &&
-             chmod +x $GOPATH/src/github.com/cauli/mulungu/wait-for &&
-             $GOPATH/src/github.com/cauli/mulungu/wait-for db:5432 -- go run main.go"
+    command: go run main.go
     depends_on:
       - db
     links:
       - db
+    

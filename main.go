@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"sync/atomic"
+	"time"
 
 	"github.com/cauli/mulungu/controllers"
+	postgres "github.com/cauli/mulungu/storage/driver"
 	"github.com/labstack/echo"
 )
 
-const brandColorRed = "\033[1;31m%s\033[0m"
+const color = "\033[1;31m%s\033[0m"
 const brand = `
 	        .    ..  ..                   
 	        ..    ....                    
@@ -35,7 +38,9 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
-	fmt.Printf(brandColorRed, brand)
+	prepareStorage()
+
+	fmt.Printf(color, brand)
 
 	e.GET("/chart/:chartId", controllers.GetChart)
 	e.PUT("/chart/:chartId", controllers.CreateChart)
@@ -45,4 +50,25 @@ func main() {
 	e.GET("/chart/:chartId/employee/:employeeId/subordinates", controllers.GetSubordinates)
 
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func prepareStorage() postgres.Storage {
+
+	ticker := time.NewTicker(1500 * time.Millisecond)
+	done := make(chan postgres.Storage, 1)
+
+	go func() {
+		var ops uint64
+		for range ticker.C {
+			storage, err := postgres.New("chart")
+			if err != nil {
+				atomic.AddUint64(&ops, 1)
+				fmt.Println(fmt.Sprintf("Error connecting to storage. Retrying... (%v)", atomic.LoadUint64(&ops)))
+			} else {
+				done <- storage
+			}
+		}
+	}()
+
+	return <-done
 }
