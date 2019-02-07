@@ -18,7 +18,6 @@ func Save(resource, id string, value interface{}) error {
 	GetGlobalCache().Mcache.Set(key, value, time.Hour)
 
 	return nil
-
 }
 
 func Load(resource string, id string) (exists bool, value interface{}) {
