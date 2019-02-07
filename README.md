@@ -4,7 +4,9 @@
 </p>
 
 # Mulungu 
-[![Build Status](https://travis-ci.org/cauli/mulungu.svg?branch=master)](https://travis-ci.org/cauli/mulungu)
+[![Build Status](https://travis-ci.org/cauli/mulungu.svg?branch=master)](https://travis-ci.org/cauli/mulungu) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/cauli/mulungu)](https://goreportcard.com/report/github.com/cauli/mulungu)
+
 
 Mulungu is a service for creating and managing organizational charts, built in [Go](https://golang.org/).
 
