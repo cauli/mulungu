@@ -39,7 +39,7 @@ func findChart(chartID string) (*tree.Tree, *model.ApiError) {
 		return nil, errID
 	}
 
-	exists, value := storage.GetById(resource, chartID)
+	exists, value := storage.Load(resource, chartID)
 	if !exists {
 		return nil, &model.ApiError{fmt.Sprintf("Chart `%v` does not exist", chartID), http.StatusNotFound}
 	}

@@ -1,19 +1,20 @@
 package postgres
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/jackc/pgx"
 )
 
+var DB *Storage
+
 type Storage struct {
-	conn     *pgx.ConnPool
+	Pool     *pgx.ConnPool
 	Resource string
 }
 
-const bootstrapQuery = `CREATE TABLE IF NOT EXISTS fixed_rules (
+const bootstrapQuery = `CREATE TABLE IF NOT EXISTS tree (
 	id varchar(40) NOT NULL,
 	account varchar(40) NOT NULL,
 	data jsonb,
@@ -21,41 +22,66 @@ const bootstrapQuery = `CREATE TABLE IF NOT EXISTS fixed_rules (
 );`
 
 func New(resource string) (Storage, error) {
-	pgx.DefaultTypeFormats["jsonb"] = pgx.TextFormatCode
+	pool, err := pgx.NewConnPool(getConfig())
+	if err != nil {
+		fmt.Println(err)
+		return Storage{}, err
+	}
 
-	conn, err := pgx.NewConnPool(getConfig())
+	_, err = pool.Exec(bootstrapQuery)
 	if err != nil {
 		return Storage{}, err
 	}
 
-	_, err = conn.Exec(bootstrapQuery)
-	if err != nil {
-		return Storage{}, err
-	}
-
-	return Storage{conn, resource}, nil
+	return Storage{pool, resource}, nil
 }
 
-func (storage *Storage) Load(id string, target interface{}) error {
+func SetMainStorage(storage *Storage) {
+	DB = storage
+}
+
+func (storage *Storage) Load(resource, id string) (result string, notFound bool, e error) {
 	var response []byte
 
-	if storage.conn == nil {
+	if storage.Pool == nil {
+		return "", false, fmt.Errorf("No database connection available")
+	}
+
+	query := fmt.Sprintf("SELECT data FROM %v WHERE id = $1 and account = 'default'", resource)
+	err := storage.Pool.QueryRow(query, id).Scan(&response)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", true, fmt.Errorf("Entry was not found")
+		}
+		return "", false, fmt.Errorf("An storage error has occurred: %v", err)
+	}
+
+	return string(response), false, nil
+}
+
+func (storage *Storage) Delete(resource, id string) error {
+	if storage.Pool == nil {
 		return fmt.Errorf("No database connection available")
 	}
 
-	query := fmt.Sprintf("SELECT data FROM %v WHERE id = $1 and account = 'default'", storage.Resource)
-
-	err := storage.conn.QueryRow(query).Scan(&response)
+	query := fmt.Sprintf("DELETE FROM %v WHERE id = $1 AND account = 'default'", resource)
+	_, err := storage.Pool.Exec(query, id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return fmt.Errorf("Entry was not found")
-		}
-		return fmt.Errorf("An storage error has occurred")
+		return err
 	}
 
-	err = json.Unmarshal(response, target)
+	return nil
+}
+
+func (storage *Storage) Save(resource, id, data string) error {
+	if storage.Pool == nil {
+		return fmt.Errorf("No database connection available")
+	}
+
+	values := fmt.Sprintf(`('%v','default','%v')`, id, data)
+	_, err := storage.Pool.Exec(fmt.Sprintf("INSERT INTO %v VALUES %v ON CONFLICT(id,account) DO UPDATE SET data = EXCLUDED.data;", resource, values))
 	if err != nil {
-		return fmt.Errorf("An error occurred while loading id `%s` from storage", id)
+		return err
 	}
 
 	return nil
@@ -69,6 +95,7 @@ func getConfig() pgx.ConnPoolConfig {
 	config.Password = os.Getenv("POSTGRES_PASSWORD")
 	config.Database = os.Getenv("POSTGRES_DB")
 	config.MaxConnections = 25
+	config.Port = 5432
 
 	return config
 }

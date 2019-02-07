@@ -3,31 +3,57 @@ package storage
 import (
 	"fmt"
 	"time"
+
+	postgres "github.com/cauli/mulungu/storage/driver"
 )
 
-func Save(resourceType string, id string, value interface{}) {
-	resourceKey := generateKey(resourceType, id)
-	GetGlobalCache().Mcache.Set(resourceKey, value, time.Hour)
+func Save(resource, id string, value interface{}) error {
+
+	err := postgres.DB.Save(resource, id, value.(string))
+	if err != nil {
+		return err
+	}
+
+	key := generateKey(resource, id)
+	GetGlobalCache().Mcache.Set(key, value, time.Hour)
+
+	return nil
+
 }
 
-func GetById(resourceType string, id string) (exists bool, value interface{}) {
-	resourceKey := generateKey(resourceType, id)
-	item := GetGlobalCache().Mcache.Get(resourceKey)
+func Load(resource string, id string) (exists bool, value interface{}) {
+	key := generateKey(resource, id)
+	item := GetGlobalCache().Mcache.Get(key)
 
 	if item == nil {
-		return false, nil
+		data, notFound, err := postgres.DB.Load(resource, id)
+		if notFound {
+			return false, nil
+		}
+
+		if err != nil {
+			fmt.Println(err)
+			return false, err
+		}
+
+		return true, data
 	}
 
 	return true, (*item).Value()
 }
 
-func Delete(resourceType string, id string) bool {
-	resourceKey := generateKey(resourceType, id)
-	deleted := GetGlobalCache().Mcache.Delete(resourceKey)
+func Delete(resource string, id string) (bool, error) {
+	key := generateKey(resource, id)
 
-	return deleted
+	err := postgres.DB.Delete(resource, id)
+	if err != nil {
+		return false, err
+	}
+
+	deleted := GetGlobalCache().Mcache.Delete(key)
+	return deleted, nil
 }
 
-func generateKey(resourceType string, id string) string {
-	return fmt.Sprintf("%s-%s", resourceType, id)
+func generateKey(resource string, id string) string {
+	return fmt.Sprintf("%s-%s", resource, id)
 }

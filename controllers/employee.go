@@ -72,7 +72,10 @@ func UpsertEmployee(c echo.Context) error {
 		return model.ApiError{errJSON.Error(), http.StatusInternalServerError}.Handle(c)
 	}
 
-	storage.Save(resource, chartID, chartJSON)
+	errSave := storage.Save(resource, chartID, chartJSON)
+	if errSave != nil {
+		model.ApiError{"An internal storage error occurred while saving the employee", http.StatusInternalServerError}.Handle(c)
+	}
 
 	if isUpdating {
 		return model.ApiResponse{"Employee was successfully updated"}.Handle(c)

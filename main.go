@@ -38,7 +38,8 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
-	prepareStorage()
+	storage := prepareStorage()
+	defer storage.Pool.Close()
 
 	fmt.Printf(color, brand)
 
@@ -52,20 +53,21 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func prepareStorage() postgres.Storage {
+func prepareStorage() *postgres.Storage {
 
 	ticker := time.NewTicker(1500 * time.Millisecond)
-	done := make(chan postgres.Storage, 1)
+	done := make(chan *postgres.Storage, 1)
 
 	go func() {
-		var ops uint64
+		var retries uint64
 		for range ticker.C {
 			storage, err := postgres.New("chart")
 			if err != nil {
-				atomic.AddUint64(&ops, 1)
-				fmt.Println(fmt.Sprintf("Error connecting to storage. Retrying... (%v)", atomic.LoadUint64(&ops)))
+				atomic.AddUint64(&retries, 1)
+				fmt.Println(fmt.Sprintf("Error connecting to storage. Retrying... (%v)", atomic.LoadUint64(&retries)))
 			} else {
-				done <- storage
+				postgres.SetMainStorage(&storage)
+				done <- &storage
 			}
 		}
 	}()

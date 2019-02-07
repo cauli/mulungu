@@ -22,7 +22,7 @@ func GetChart(c echo.Context) error {
 		return errID.Handle(c)
 	}
 
-	exists, value := storage.GetById(resource, chartID)
+	exists, value := storage.Load(resource, chartID)
 	if !exists {
 		message := fmt.Sprintf("Chart `%v` does not exist", chartID)
 		return model.ApiError{message, http.StatusNotFound}.Handle(c)
@@ -47,7 +47,7 @@ func CreateChart(c echo.Context) error {
 		return errID.Handle(c)
 	}
 
-	exists, _ := storage.GetById(resource, chartID)
+	exists, _ := storage.Load(resource, chartID)
 	if exists {
 		message := fmt.Sprintf("Chart `%v` already exists", chartID)
 		return model.ApiError{message, http.StatusBadRequest}.Handle(c)
@@ -58,7 +58,10 @@ func CreateChart(c echo.Context) error {
 		return model.ApiError{"Could not unmarshall tree", http.StatusInternalServerError}.Handle(c)
 	}
 
-	storage.Save(resource, chartID, json)
+	err = storage.Save(resource, chartID, json)
+	if err != nil {
+		model.ApiError{"An internal storage error occurred while saving the chart", http.StatusInternalServerError}.Handle(c)
+	}
 
 	return model.ApiResponse{fmt.Sprintf("Chart `%v` was created", chartID)}.Handle(c)
 }
@@ -73,7 +76,10 @@ func DeleteChart(c echo.Context) error {
 		return errID.Handle(c)
 	}
 
-	deleted := storage.Delete(resource, chartID)
+	deleted, err := storage.Delete(resource, chartID)
+	if err != nil {
+		return model.ApiError{"An internal error occurred while deleting the chart", http.StatusInternalServerError}.Handle(c)
+	}
 
 	if deleted {
 		return model.ApiResponse{fmt.Sprintf("Chart `%s` was successfully deleted", chartID)}.Handle(c)
