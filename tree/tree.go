@@ -4,20 +4,27 @@ import (
 	"fmt"
 )
 
+// Tree is the basic struct for any tree hierarchy
 type Tree struct {
 	Id   string `json:"id"`
 	Root *Node  `json:"root"`
 }
 
+// SubordinatesResponse is the base
+// response for the GET subordinates route
 type SubordinatesResponse struct {
 	Subordinates SubordinatesInfo `json:"subordinates"`
 }
 
+// SubordinatesInfo contains a `count` of subordinates
+// and a full `hierarchy` of nodes
 type SubordinatesInfo struct {
 	Count     SubordinatesCount `json:"count"`
 	Hierarchy []*Node           `json:"hierarchy,omitempty"`
 }
 
+// SubordinatesCount contains a `direct` and a `total`
+// count of subordinates
 type SubordinatesCount struct {
 	Direct int `json:"direct"`
 	Total  int `json:"total"`
@@ -119,6 +126,8 @@ func (tree Tree) AttachNode(newNode *Node, parent *Node) error {
 	return nil
 }
 
+// DetachNode will remove a `node` from its parent
+// and will return a pointer to the detached node
 func (tree Tree) DetachNode(node *Node) (*Node, error) {
 	if node == nil {
 		return nil, fmt.Errorf("Must provide a new node to detach")
@@ -139,6 +148,8 @@ func (tree Tree) DetachNode(node *Node) (*Node, error) {
 	return node, nil
 }
 
+// MoveNode will detach a the subtree of a given `node`
+// and then attach it as a descendant of `newParent`
 func (tree Tree) MoveNode(node *Node, newParent *Node) error {
 	if node == nil || newParent == nil {
 		return fmt.Errorf("Must provide a node to move and parent to attach it to")

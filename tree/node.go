@@ -1,5 +1,8 @@
 package tree
 
+// Node is the entity that is the building block of a tree
+// it may or may not contain a `parentId`, that points to
+// another node ID
 type Node struct {
 	ID       string   `json:"id"`
 	Children []*Node  `json:"children,omitempty"`
@@ -9,6 +12,7 @@ type Node struct {
 	RootID   *string  `json:"rootId,omitempty"`
 }
 
+// MetaData is the business-relevant information for a Node
 type MetaData struct {
 	Name  string `json:"name,omitempty"`
 	Title string `json:"title,omitempty"`

@@ -6,6 +6,8 @@ import (
 	"github.com/labstack/echo"
 )
 
+// ApiError is the model for request errors,
+// containing a `status` (http status code) and a message
 type ApiError struct {
 	Message string `json:"message,omitempty"`
 	Code    int    `json:"status,omitempty"`
@@ -16,6 +18,8 @@ func (err ApiError) Handle(c echo.Context) error {
 	return c.JSON(err.Code, err)
 }
 
+// ApiResponse is the model for request resposne messages
+// it contains only a simple message that can be transformed to JSON
 type ApiResponse struct {
 	Message string `json:"message,omitempty"`
 }

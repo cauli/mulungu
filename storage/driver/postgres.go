@@ -7,8 +7,11 @@ import (
 	"github.com/jackc/pgx"
 )
 
+// DB is a singleton instance of the Storage
 var DB *Storage
 
+// Storage is a struct that holds important
+// database info like the connection pool and resource in use used
 type Storage struct {
 	Pool     *pgx.ConnPool
 	Resource string
